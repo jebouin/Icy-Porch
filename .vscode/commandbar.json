@@ -1,0 +1,111 @@
+{
+	"skipTerminateQuickPick": true,
+	"skipSwitchToOutput": false,
+	"skipErrorMessage": true,
+	"commands": [
+		{
+			"text": "ALL",
+			"color": "white",
+			"commandType":"exec",
+			"command": "echo TODO",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -9
+		},
+		{
+			"text": "PAK",
+			"color": "white",
+			"commandType":"exec",
+			"command": "haxe -hl hxd.fmt.pak.Build.hl -lib heaps -main hxd.fmt.pak.Build && hl hxd.fmt.pak.Build.hl -exclude-path bitwigProjects,levelProject/backups,musics/exportWAV && mv res.pak bin/",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -10
+		},
+		{
+			"text": "DX",
+			"color": "orange",
+			"commandType":"exec",
+			"command": "./prebuild.sh && haxe build.desktop.directx.hxml",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -11
+		},
+		{
+			"text": "OpenGL",
+			"color": "orange",
+			"commandType":"exec",
+			"command": "./prebuild.sh && haxe build.desktop.opengl.hxml",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -12
+		},
+		{
+			"text": "Run HL",
+			"color": "orange",
+			"command": "hl bin/game.hl",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -13
+		},
+		{
+			"text": "Windows",
+			"color": "yellow",
+			"command": "cp bin/game.hl release/GameWindows/hlboot.dat && cd release/ && rm -f GameWindows/*.sav && zip GameWindows.zip -r GameWindows/",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -14
+		},
+		{
+			"text": "JS",
+			"color": "yellow",
+			"commandType":"exec",
+			"command": "./prebuild.sh && haxe build.web.js.hxml",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -15
+		},
+		{
+			"text": "Itch",
+			"color": "yellow",
+			"commandType":"exec",
+			"command": "./prebuild.sh && haxe build.web.itch.hxml",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -16
+		},
+		{
+			"text": "NG",
+			"color": "yellow",
+			"commandType":"exec",
+			"command": "./prebuild.sh && haxe build.web.newgrounds.hxml",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -17
+		},
+		{
+			"text": "GJ",
+			"color": "yellow",
+			"commandType":"exec",
+			"command": "./prebuild.sh && haxe build.web.gamejolt.hxml",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -18
+		},
+		{
+			"text": "Server",
+			"color": "white",
+			"command": "cd bin/ && python3 -m http.server",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -19
+		},
+		{
+			"text": "Clean",
+			"color": "Blue",
+			"command": "./clean.sh",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -20
+		}
+    ]
+}
