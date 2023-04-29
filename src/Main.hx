@@ -71,6 +71,8 @@ class Main extends hxd.App {
         #if debug
         controller.bindKey(Action.jump, Key.N);
         controller.bindKey(Action.freeze, Key.E);
+        controller.bindKey(Action.debugLeft, Key.R);
+        controller.bindKey(Action.debugRight, Key.T);
         #else
         controller.bindKey(Action.jump, Key.X);
         controller.bindKey(Action.freeze, Key.C);

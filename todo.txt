@@ -1,1 +1,1 @@
-- Make game
+- Use intgrid for collisions
