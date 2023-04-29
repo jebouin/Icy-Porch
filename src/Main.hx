@@ -48,6 +48,7 @@ class Main extends hxd.App {
         initController();
         engine.fullScreen = false;
         engine.autoResize = true;
+        engine.backgroundColor = Palette.BLACK;
         screenTexture = new h3d.mat.Texture(WIDTH, HEIGHT, [Target]);
         screen = new Bitmap(Tile.fromTexture(screenTexture), s2d);
         hudTexture = new h3d.mat.Texture(WIDTH, HEIGHT, [Target]);
@@ -82,6 +83,10 @@ class Main extends hxd.App {
         } else if(event.kind == EFocusLost) {
             hasFocus = false;
         }
+    }
+    public function setFullscreen(v:Bool) {
+        if(engine.fullScreen == v) return;
+        engine.fullScreen = v;
     }
     override function onResize() {
         hxd.Timer.skip();
@@ -160,9 +165,17 @@ class Main extends hxd.App {
     public function hitStop(duration:Float) {
         hitStopTimer = duration;
     }
-    public function setFullscreen(v:Bool) {
-        if(engine.fullScreen == v) return;
-        engine.fullScreen = v;
+    override function render(e:h3d.Engine) {
+        var col = Palette.BLACK;
+        e.pushTarget(screenTexture);
+        e.clear(col, 1);
+        SceneManager.renderWorld(e);
+        e.popTarget();
+        e.pushTarget(hudTexture);
+        e.clear(col, 1);
+        SceneManager.renderHUD(e);
+        e.popTarget();
+        s2d.render(e);
     }
 
     static function main() {
