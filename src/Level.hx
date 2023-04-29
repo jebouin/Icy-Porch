@@ -2,6 +2,7 @@ package ;
 
 import assets.LevelProject;
 import h2d.TileGroup;
+import entities.*;
 
 class LevelRender {
     var walls : TileGroup;
@@ -46,10 +47,14 @@ class Level {
     }
 
     function loadLevel(newLevel:LevelProject_Level) {
+        Game.inst.removeEntities();
         level = newLevel;
         if(render != null) {
             render.delete();
         }
         render = new LevelRender(level);
+        for(t in level.l_Entities.all_Truck) {
+            new Truck(t.pixelX, t.pixelY);
+        }
     }
 }

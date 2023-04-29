@@ -2,19 +2,23 @@ package ;
 
 import h2d.Graphics;
 import SceneManager.Scene;
+import entities.*;
 
 class Game extends Scene {
     static var _layer = 0;
     public static var LAYER_CLEAR = _layer++;
     public static var LAYER_FX_BACK = _layer++;
     public static var LAYER_BACK = _layer++;
-    public static var LAYER_ENTITY = _layer++;
+    public static var LAYER_BOX = _layer++;
+    public static var LAYER_TRUCK = _layer++;
     public static var LAYER_FX_MID = _layer++;
     public static var LAYER_WALLS = _layer++;
     public static var LAYER_FX_FRONT = _layer++;
     public static var LAYER_DEBUG = _layer++;
     public static var inst : Game;
     public var level : Level;
+    public var entities : Array<Entity> = [];
+    public var boxes : Array<Box> = [];
 
     public function new() {
         super();
@@ -23,19 +27,50 @@ class Game extends Scene {
         }
         inst = this;
         level = new Level();
-        var g = new Graphics();
-        world.add(g, LAYER_ENTITY);
-        g.beginFill(0xFF0000);
-        g.drawCircle(150, 100, 10);
-        g.endFill();
+        boxes.push(new Box());
     }
 
     override public function delete() {
         super.delete();
         inst = null;
+        for(b in boxes) {
+            b.delete();
+        }
+        for(e in entities) {
+            e.delete();
+        }
     }
 
     override public function update(dt:Float) {
         super.update(dt);
+        var i = 0;
+        while(i < boxes.length) {
+            boxes[i].update(dt);
+            if(boxes[i].deleted) {
+                boxes.splice(i, 1);
+            } else {
+                i++;
+            }
+        }
+        i = 0;
+        while(i < entities.length) {
+            entities[i].update(dt);
+            if(entities[i].deleted) {
+                entities.splice(i, 1);
+            } else {
+                i++;
+            }
+        }
+    }
+
+    public function removeEntities() {
+        for(e in entities) {
+            e.delete();
+        }
+        entities = [];
+        for(b in boxes) {
+            b.delete();
+        }
+        boxes = [];
     }
 }

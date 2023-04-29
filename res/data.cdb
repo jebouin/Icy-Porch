@@ -1,0 +1,391 @@
+{
+	"sheets": [
+		{
+			"name": "atlas",
+			"columns": [
+				{
+					"typeStr": "1",
+					"name": "name",
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "x",
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "y",
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "width",
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "height",
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "frameWidth",
+					"opt": true,
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "frameHeight",
+					"opt": true,
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "frameCount",
+					"opt": true,
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "fps",
+					"opt": true
+				},
+				{
+					"typeStr": "3",
+					"name": "centerX",
+					"opt": true,
+					"kind": null
+				},
+				{
+					"typeStr": "3",
+					"name": "centerY",
+					"opt": true,
+					"kind": null
+				},
+				{
+					"typeStr": "8",
+					"name": "frames",
+					"opt": true,
+					"kind": null
+				},
+				{
+					"typeStr": "2",
+					"name": "loops",
+					"opt": true
+				}
+			],
+			"lines": [
+				{
+					"name": "box",
+					"x": 0,
+					"y": 0,
+					"width": 15,
+					"height": 11,
+					"centerX": 0,
+					"centerY": 0
+				},
+				{
+					"name": "truck",
+					"x": 0,
+					"y": 16,
+					"width": 96,
+					"height": 33,
+					"centerX": 0,
+					"centerY": 0,
+					"frameWidth": 48,
+					"frameHeight": 33,
+					"frameCount": 2,
+					"fps": 2
+				}
+			],
+			"separators": [],
+			"props": {}
+		},
+		{
+			"name": "atlas@frames",
+			"props": {
+				"hide": true
+			},
+			"separators": [],
+			"lines": [],
+			"columns": [
+				{
+					"typeStr": "3",
+					"name": "id",
+					"kind": null
+				}
+			]
+		}
+	],
+	"customTypes": [
+		{
+			"name": "BulletCollider",
+			"cases": [
+				{
+					"name": "None",
+					"args": []
+				},
+				{
+					"name": "Rect",
+					"args": [
+						{
+							"name": "w",
+							"typeStr": "3"
+						},
+						{
+							"name": "h",
+							"typeStr": "3"
+						}
+					]
+				},
+				{
+					"name": "Circle",
+					"args": [
+						{
+							"name": "r",
+							"typeStr": "3"
+						}
+					]
+				},
+				{
+					"name": "Ray",
+					"args": [
+						{
+							"name": "dist",
+							"typeStr": "3"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "BulletRotation",
+			"cases": [
+				{
+					"name": "None",
+					"args": []
+				},
+				{
+					"name": "Auto",
+					"args": []
+				}
+			]
+		},
+		{
+			"name": "LaserType",
+			"cases": [
+				{
+					"name": "None",
+					"args": []
+				},
+				{
+					"name": "Instant",
+					"args": []
+				},
+				{
+					"name": "Sustain",
+					"args": []
+				}
+			]
+		},
+		{
+			"name": "BossState",
+			"cases": [
+				{
+					"name": "None",
+					"args": []
+				},
+				{
+					"name": "CometIntro",
+					"args": []
+				},
+				{
+					"name": "CometAttackCross",
+					"args": []
+				},
+				{
+					"name": "CometAttackLaser",
+					"args": []
+				},
+				{
+					"name": "CometAttackRocket",
+					"args": []
+				},
+				{
+					"name": "CometAvoid",
+					"args": []
+				},
+				{
+					"name": "CometDead",
+					"args": []
+				},
+				{
+					"name": "TetrivIntro",
+					"args": []
+				},
+				{
+					"name": "TetrivAttackMine",
+					"args": []
+				},
+				{
+					"name": "TetrivAttackDodec",
+					"args": []
+				},
+				{
+					"name": "TetrivDead",
+					"args": []
+				},
+				{
+					"name": "ZirnIntro",
+					"args": []
+				},
+				{
+					"name": "ZirnTurn",
+					"args": []
+				},
+				{
+					"name": "ZirnPull",
+					"args": []
+				},
+				{
+					"name": "ZirnPush",
+					"args": []
+				},
+				{
+					"name": "ZirnDead",
+					"args": []
+				},
+				{
+					"name": "SpiderIntro",
+					"args": []
+				},
+				{
+					"name": "SpiderIdle",
+					"args": []
+				},
+				{
+					"name": "SpiderAnchor",
+					"args": []
+				},
+				{
+					"name": "SpiderDead",
+					"args": []
+				},
+				{
+					"name": "CorpseIdle",
+					"args": []
+				},
+				{
+					"name": "CorpseDead",
+					"args": []
+				}
+			]
+		},
+		{
+			"name": "BossMovementKind",
+			"cases": [
+				{
+					"name": "None",
+					"args": []
+				},
+				{
+					"name": "HoverOverHero",
+					"args": []
+				},
+				{
+					"name": "HoverNextToTower",
+					"args": []
+				},
+				{
+					"name": "AvoidColumn",
+					"args": []
+				},
+				{
+					"name": "Custom",
+					"args": []
+				}
+			]
+		},
+		{
+			"name": "BossPhase",
+			"cases": [
+				{
+					"name": "None",
+					"args": []
+				},
+				{
+					"name": "Hub",
+					"args": []
+				},
+				{
+					"name": "Intro",
+					"args": []
+				},
+				{
+					"name": "Comet",
+					"args": []
+				},
+				{
+					"name": "Tetriv",
+					"args": []
+				},
+				{
+					"name": "Zirn",
+					"args": []
+				},
+				{
+					"name": "Spider",
+					"args": []
+				},
+				{
+					"name": "Maze",
+					"args": []
+				},
+				{
+					"name": "Snake",
+					"args": []
+				},
+				{
+					"name": "Ending",
+					"args": []
+				}
+			]
+		},
+		{
+			"name": "GameDifficulty",
+			"cases": [
+				{
+					"name": "Easy",
+					"args": []
+				},
+				{
+					"name": "Normal",
+					"args": []
+				},
+				{
+					"name": "Expert",
+					"args": []
+				}
+			]
+		},
+		{
+			"name": "CameraKind",
+			"cases": [
+				{
+					"name": "FixedBottom",
+					"args": []
+				},
+				{
+					"name": "FollowHeroUp",
+					"args": []
+				},
+				{
+					"name": "FollowHeroAll",
+					"args": []
+				}
+			]
+		}
+	],
+	"compress": false
+}
