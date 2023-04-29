@@ -21,7 +21,7 @@ class Macros {
             });
         }
         inline function addStringField(i, name) {
-            var val = lines[i].substr(lines[i].indexOf(":") + 1);
+            var val = lines[i].substr(lines[i].indexOf(":") + 2);
             addField(i, name, FieldType.FVar(macro:String, macro $v{val}));
         }
         addStringField(0, "GAME_NAME");

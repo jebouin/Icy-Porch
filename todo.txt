@@ -1,8 +1,1 @@
-- Fix windows build
-- Linux build
-- Native build?
-- Generated warning with timestamp
-- Version scripts with changelog
-- Use butler (upload thumb/screenshots from promo?)
-- Record promo gifs and screenshots
-- Command to build and release everything
+- Make game

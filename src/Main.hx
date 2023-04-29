@@ -6,12 +6,9 @@ import h2d.Tile;
 import h3d.mat.Texture;
 import h2d.Bitmap;
 import hxd.Key;
-import Date;
-#if int_ng
-import integration.Newgrounds;
-#elseif int_gj
-import integration.Gamejolt;
-#end
+import ui.FPSCounter;
+import Controller;
+import SceneManager;
 
 @:native("")
 extern class External {
@@ -23,37 +20,60 @@ extern class External {
 class Main extends hxd.App {
     public static inline var WIDTH = 320;
     public static inline var HEIGHT = 180;
+    public static inline var WIDTH2 = WIDTH >> 1;
+    public static inline var HEIGHT2 = HEIGHT >> 1;
     public static inline var FPS = 60;
     public static var inst : Main;
-    public var hasFocus : Bool;
-    var maxDrawCalls : Int;
-    var started : Bool;
-    var test : h2d.Graphics;
+    public var controller : Controller;
+    public var hasFocus : Bool = true;
+    public var screen : Bitmap;
+    public var screenTexture : Texture;
+    public var hud : Bitmap;
+    public var hudTexture : Texture;
+    public var scale(default, null) : Int;
+    var timeToSimulate : Float = 0.;
+    var timeToSimulateConstantRate : Float = 0.;
+    var started : Bool = false;
+    var maxDrawCalls : Int = 0;
+    #if debug
+    public var fpsCounter : FPSCounter;
+    #end
+    public var doubleTick : Bool = false;
+    var hitStopTimer : Float = 0.;
+    public var onHitStopDone : Void->Void = null;
 
     override function init() {
+        Assets.init();
+        controller = new Controller();
+        initController();
         engine.fullScreen = false;
         engine.autoResize = true;
-        hasFocus = true;
+        screenTexture = new h3d.mat.Texture(WIDTH, HEIGHT, [Target]);
+        screen = new Bitmap(Tile.fromTexture(screenTexture), s2d);
+        hudTexture = new h3d.mat.Texture(WIDTH, HEIGHT, [Target]);
+        hud = new Bitmap(Tile.fromTexture(hudTexture), s2d);
+        updateScale();
         var window = hxd.Window.getInstance();
         window.addEventTarget(onEvent);
         window.title = GAME_NAME;
-
-        maxDrawCalls = 0;
-        #if int_ng
-        Newgrounds.init(startGame);
-        #elseif int_gj
-        Gamejolt.init(startGame);
-        #else
-        startGame();
+        #if debug
+        fpsCounter = new FPSCounter(Assets.font);
         #end
-
-        test = new h2d.Graphics(s2d);
-        test.beginFill(0xFF0000);
-        test.drawCircle(0, 0, 100);
-        test.endFill();
+        SceneManager.init();
+        startGame();
     }
     function startGame() {
         started = true;
+        new Game();
+    }
+    function initController() {
+        #if debug
+        controller.bindKey(Action.jump, Key.N);
+        controller.bindKey(Action.freeze, Key.E);
+        #else
+        controller.bindKey(Action.jump, Key.X);
+        controller.bindKey(Action.freeze, Key.C);
+        #end
     }
     function onEvent(event:hxd.Event) {
         if(!started) return;
@@ -63,20 +83,82 @@ class Main extends hxd.App {
             hasFocus = false;
         }
     }
+    override function onResize() {
+        hxd.Timer.skip();
+        #if debug
+        fpsCounter.onResize();
+        #end
+        updateScale();
+	}
+    function updateScale() {
+        scale = Std.int(Math.min(s2d.width / WIDTH, s2d.height / HEIGHT));
+        screen.setScale(scale);
+        hud.setScale(scale);
+        var sx = Util.quantize(s2d.width * .5 - WIDTH * scale * .5, scale);
+        var sy = Util.quantize(s2d.height * .5 - HEIGHT * scale * .5, scale);
+        screen.x = hud.x = sx;
+        screen.y = hud.y = sy;
+    }
+    function tick() {
+        var dt = 1. / FPS;
+        SceneManager.update(dt);
+        SceneManager.updateBack(dt);
+    }
+    function tickConstantRate() {
+        var dt = 1. / FPS;
+        SceneManager.updateConstantRate(dt);
+    }
     override function update(dt:Float) {
         if(!started) return;
+        if(hasFocus) {
+            timeToSimulateConstantRate += dt;
+            if(hitStopTimer > 0) {
+                var rem = Util.fmin(dt, hitStopTimer);
+                dt -= rem;
+                hitStopTimer -= rem;
+                if(hitStopTimer == 0 && onHitStopDone != null) {
+                    onHitStopDone();
+                    onHitStopDone = null;
+                }
+            }
+            timeToSimulate += dt;
+            var ticks = 5;
+            while(timeToSimulate >= 1. / FPS && ticks > 0) {
+                timeToSimulate -= 1. / FPS;
+                tick();
+                if(SceneManager.scenes.length == 0) {
+                    System.exit();
+                }
+                controller.afterUpdate();
+                ticks--;
+            }
+            if(doubleTick) {
+                tick();
+                doubleTick = false;
+            }
+            ticks = 5;
+            while(timeToSimulateConstantRate >= 1. / FPS && ticks > 0) {
+                timeToSimulateConstantRate -= 1. / FPS;
+                tickConstantRate();
+                ticks--;
+            }
+        }
         var cnt = engine.drawCalls;
         if(cnt > maxDrawCalls) {
             maxDrawCalls = cnt;
+            #if show_counts
+            trace("Draw calls: " + maxDrawCalls);
+            #end
         }
-        #if js
-        if(Key.isPressed(Key.F)) {
-            engine.fullScreen = !engine.fullScreen;
+        #if debug
+        if(Key.isPressed(Key.ESCAPE)) {
+            System.exit();
         }
+        fpsCounter.update();
         #end
-        var time = Timer.stamp();
-        test.x = Math.cos(2.7 * time) * 200 + 800;
-        test.y = Math.sin(2 * time) * 200 + 450;
+    }
+    public function hitStop(duration:Float) {
+        hitStopTimer = duration;
     }
     public function setFullscreen(v:Bool) {
         if(engine.fullScreen == v) return;

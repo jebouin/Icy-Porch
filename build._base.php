@@ -1,4 +1,6 @@
 -lib heaps
+-lib castle
+-lib ldtk-haxe-api
 -cp src
 --macro hxd.res.Config.addIgnoredDir("backups")
 --macro hxd.res.Config.addIgnoredDir("bitwigProjects")

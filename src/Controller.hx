@@ -34,11 +34,8 @@ enum abstract ControllerType(Int) {
 }
 
 enum abstract Action(Int) {
-    var moveUp;
-    var moveRight;
-    var moveDown;
-    var moveLeft;
-    var action;
+    var jump;
+    var freeze;
 }
 
 class Controller {
@@ -63,13 +60,17 @@ class Controller {
 
     function onPadDisconnected() {
 		waitForPad();
-        onDisconnect();
+        if(onDisconnect != null) {
+            onDisconnect();
+        }
 	}
 
 	function onPadConnected(pad:hxd.Pad) {
 		this.pad = pad;
 		pad.onDisconnect = onPadDisconnected;
-        onConnect();
+        if(onConnect != null) {
+            onConnect();
+        }
 	}
 
     function getNewBindingFromPadButton(action:Action, button:PadButton) : Binding {
