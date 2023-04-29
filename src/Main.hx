@@ -107,12 +107,12 @@ class Main extends hxd.App {
         screen.y = hud.y = sy;
     }
     function tick() {
-        var dt = 1. / FPS;
+        var dt = 1. / 60;
         SceneManager.update(dt);
         SceneManager.updateBack(dt);
     }
     function tickConstantRate() {
-        var dt = 1. / FPS;
+        var dt = 1. / 60;
         SceneManager.updateConstantRate(dt);
     }
     override function update(dt:Float) {

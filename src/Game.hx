@@ -19,6 +19,8 @@ class Game extends Scene {
     public var level : Level;
     public var entities : Array<Entity> = [];
     public var boxes : Array<Box> = [];
+    public var spawnX : Int;
+    public var spawnY : Int;
 
     public function new() {
         super();

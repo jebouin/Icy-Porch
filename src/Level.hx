@@ -9,8 +9,6 @@ import h2d.col.IBounds;
 import assets.LevelProject;
 import h2d.TileGroup;
 import entities.*;
-import Json;
-import haxe.Json;
 
 enum CollisionShape {
     Empty;
@@ -62,7 +60,7 @@ class Level {
     public function new() {
         project = new LevelProject();
         loadTileCollisions();
-        loadLevelById(1);
+        loadLevelById(0);
     }
 
     public function delete() {
@@ -89,6 +87,8 @@ class Level {
         render = new LevelRender(level);
         for(t in level.l_Entities.all_Truck) {
             new Truck(t.pixelX, t.pixelY);
+            Game.inst.spawnX = t.pixelX + t.width - 16;
+            Game.inst.spawnY = t.pixelY + t.height - 10;
         }
         loadColliders();
     }
@@ -103,8 +103,6 @@ class Level {
                 if(col == Empty) continue;
                 var comp = getCollisionComponent(i, j);
                 var pts = getComponentCorners(comp);
-                trace(comp);
-                trace(pts);
                 colliders.push(new IPolygon(pts));
             }
         }
@@ -138,11 +136,12 @@ class Level {
         return comp;
     }
     function getComponentCorners(comp:Array<{i:Int, j:Int}>) : Array<IPoint> {
+        var xMax = width * TS + 1;
         inline function ptu(x:Int, y:Int) {
-            return y * (width * TS) + x;
+            return y * xMax + x;
         }
         inline function utp(u:Int) {
-            return {x: u % (width * TS), y: Std.int(u / (width * TS))};
+            return {x: u % xMax, y: Std.int(u / xMax)};
         }
         var graph = new IntMap<Int>();
         inline function addEdge(u:Int, v:Int) {
@@ -211,54 +210,143 @@ class Level {
         }
         return false;
     }
+    public function getSlope(x:Float, y:Float) {
+        var minDist = Collision.INF_DIST_SQ, closestCollider = null, closestId = -1;
+        for(collider in colliders) {
+            for(i in 0...collider.points.length) {
+                var p = collider.points[i];
+                var curDist = Collision.pointPointDistSq(x, y, p.x, p.y);
+                if(curDist < minDist) {
+                    minDist = curDist;
+                    closestCollider = collider;
+                    closestId = i;
+                }
+            }
+        }
+        if(minDist == Collision.INF_DIST_SQ) {
+            return new Point(0, 0);
+        }
+        var pi = closestId == 0 ? closestCollider.points.length - 1 : closestId - 1;
+        var ni = closestId == closestCollider.points.length - 1 ? 0 : closestId + 1;
+        var pt = closestCollider.points[closestId];
+        var pDist = Util.fmax(Util.fabs(x - closestCollider.points[pi].x), Util.fabs(y - closestCollider.points[pi].y));
+        var nDist = Util.fmax(Util.fabs(x - closestCollider.points[ni].x), Util.fabs(y - closestCollider.points[ni].y));
+        var seg = null;
+        if(pDist < nDist) {
+            seg = new Point(pt.x - closestCollider.points[pi].x, pt.y - closestCollider.points[pi].y);
+        } else {
+            seg = new Point(closestCollider.points[ni].x - pt.x, closestCollider.points[ni].y - pt.y);
+        }
+        return seg;
+    }
     public function rectCollision(x:Int, y:Int, w:Int, h:Int) {
         return pointCollision(new Point(x, y)) || pointCollision(new Point(x + w, y)) || pointCollision(new Point(x, y + h)) || pointCollision(new Point(x + w, y + h));
     }
     public function sweptRectCollisionHorizontal(x:Int, y:Int, w:Int, h:Int, dx:Int) {
-        var moved = 0;
+        var res = {moveX: 0, moveY: 0};
         if(dx > 0) {
             for(i in 0...dx) {
-                if(pointCollision(new Point(x + w + 1, y)) || pointCollision(new Point(x + w + 1, y + h))) {
-                    return moved;
+                if(pointCollision(new Point(x + w + 1, y))) {
+                    var slope = getSlope(x + w + 1, y);
+                    if(slope.x == slope.y || slope.y == 0) {
+                        res.moveX++;
+                        x++;
+                        res.moveY++;
+                        y++;
+                    } else {
+                        return res;
+                    }
+                } else if(pointCollision(new Point(x + w + 1, y + h))) {
+                    var slope = getSlope(x + w + 1, y + h);
+                    if(slope.x == -slope.y || slope.y == 0) {
+                        res.moveX++;
+                        x++;
+                        res.moveY--;
+                        y--;
+                    } else {
+                        return res;
+                    }
                 } else {
                     x++;
-                    moved++;
+                    res.moveX++;
                 }
             }
         } else if(dx < 0) {
             for(i in 0...-dx) {
-                if(pointCollision(new Point(x - 1, y)) || pointCollision(new Point(x - 1, y + h))) {
-                    return moved;
+                if(pointCollision(new Point(x - 1, y))) {
+                    var slope = getSlope(x - 1, y);
+                    if(slope.x == -slope.y || slope.y == 0) {
+                        res.moveX--;
+                        x--;
+                        res.moveY++;
+                        y++;
+                    } else {
+                        return res;
+                    }
+                } else if(pointCollision(new Point(x - 1, y + h))) {
+                    var slope = getSlope(x - 1, y + h);
+                    if(slope.x == slope.y || slope.y == 0) {
+                        res.moveX--;
+                        x--;
+                        res.moveY--;
+                        y--;
+                    } else {
+                        return res;
+                    }
                 } else {
                     x--;
-                    moved--;
+                    res.moveX--;
                 }
             }
         }
-        return moved;
+        return res;
     }
     public function sweptRectCollisionVertical(x:Int, y:Int, w:Int, h:Int, dy:Int) {
-        var moved = 0;
+        var res = {moveX: 0, moveY: 0};
         if(dy > 0) {
             for(i in 0...dy) {
                 if(pointCollision(new Point(x, y + h + 1)) || pointCollision(new Point(x + w, y + h + 1))) {
-                    return moved;
+                    return res;
                 } else {
                     y++;
-                    moved++;
+                    res.moveY++;
                 }
             }
         } else if(dy < 0) {
             for(i in 0...-dy) {
-                if(pointCollision(new Point(x, y - 1)) || pointCollision(new Point(x + w, y - 1))) {
-                    return moved;
+                if(pointCollision(new Point(x, y - 1))) {
+                    var slope = getSlope(x, y - 1);
+                    if(slope.x == -slope.y) {
+                        res.moveX++;
+                        x++;
+                        res.moveY--;
+                        y--;
+                    } else {
+                        return res;
+                    }
+                } else if(pointCollision(new Point(x + w, y - 1))) {
+                    var slope = getSlope(x + w, y - 1);
+                    if(slope.x == slope.y) {
+                        res.moveX--;
+                        x--;
+                        res.moveY--;
+                        y--;
+                    } else {
+                        return res;
+                    }
                 } else {
                     y--;
-                    moved--;
+                    res.moveY--;
                 }
+                /*if(pointCollision(new Point(x, y - 1)) || pointCollision(new Point(x + w, y - 1))) {
+                    return res;
+                } else {
+                    y--;
+                    res.moveY--;
+                }*/
             }
         }
-        return moved;
+        return res;
     }
 
     function loadTileCollisions() {
