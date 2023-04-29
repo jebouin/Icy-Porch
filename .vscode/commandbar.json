@@ -100,12 +100,20 @@
 			"priority": -19
 		},
 		{
+			"text": "Profile",
+			"color": "yellow",
+			"command": "hl --profile 10000 bin/hl/icyPorch.hl && mv hlprofile.dump tools/ && hl tools/profiler.hl tools/hlprofile.dump",
+			"alignment": "right",
+			"skipTerminateQuickPick": false,
+			"priority": -20
+		},
+		{
 			"text": "Clean",
 			"color": "Blue",
 			"command": "./clean.sh",
 			"alignment": "right",
 			"skipTerminateQuickPick": false,
-			"priority": -20
+			"priority": -21
 		}
     ]
 }

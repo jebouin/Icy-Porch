@@ -8,10 +8,14 @@ class Entity {
     public var y : Int;
     public var deleted : Bool;
 
-    public function new(animData:AnimData, layer:Int) {
+    public function new(animData:AnimData, layer:Int, x:Int, y:Int) {
         anim = new Anim(animData.tiles, animData.fps, animData.loops);
         Game.inst.world.add(anim, layer);
         Game.inst.entities.push(this);
+        this.x = x;
+        this.y = y;
+        anim.x = x;
+        anim.y = y;
     }
 
     public function delete() {

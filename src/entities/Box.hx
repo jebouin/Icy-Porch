@@ -32,6 +32,8 @@ class Box {
         Game.inst.world.add(bitmap, Game.LAYER_BOX);
         x = Game.inst.spawnX;
         y = Game.inst.spawnY;
+        bitmap.x = x;
+        bitmap.y = y;
     }
 
     public function delete() {

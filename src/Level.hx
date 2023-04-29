@@ -27,7 +27,7 @@ class LevelRender {
         walls = level.l_Walls.render();
         Game.inst.world.add(walls, Game.LAYER_WALLS);
         back = level.l_Back.render();
-        Game.inst.world.add(back, Game.LAYER_BACK);
+        Game.inst.world.add(back, Game.LAYER_BACK_WALLS);
     }
 
     public function delete() {
@@ -55,25 +55,25 @@ class Level {
     var project : LevelProject;
     var level : LevelProject_Level = null;
     public var render : LevelRender = null;
+    public var title(default, null) : String = "";
     var colliders : Array<IPolygon> = [];
 
     public function new() {
         project = new LevelProject();
         loadTileCollisions();
-        loadLevelById(0);
     }
 
     public function delete() {
 
     }
 
-    function loadLevelById(id:Int) {
+    public function loadLevelById(id:Int) {
         var level = project.all_worlds.Default.getLevel(null, "Level_" + id);
         if(level == null) {
-            trace("Level id not found: " + id);
-            return;
+            return false;
         }
         loadLevel(level);
+        return true;
     }
 
     function loadLevel(newLevel:LevelProject_Level) {
@@ -91,6 +91,7 @@ class Level {
             Game.inst.spawnY = t.pixelY + t.height - 10;
         }
         loadColliders();
+        title = level.f_Title;
     }
 
     function loadColliders() {

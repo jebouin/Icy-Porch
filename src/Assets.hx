@@ -1,5 +1,6 @@
 package ;
 
+import haxe.ds.Vector;
 import h2d.Tile;
 import h2d.Font;
 import haxe.ds.StringMap;
@@ -11,14 +12,21 @@ typedef AnimData = {
 }
 
 class Assets {
+    public static var noiseX : Vector<Vector<Float> >;
+    public static var noiseY : Vector<Vector<Float> >;
+    public static var noiseWidth : Int;
+    public static var noiseHeight : Int;
     public static var font : Font;
+    public static var fontLarge : Font;
     public static var tiles : StringMap<Tile>;
     public static var animData : StringMap<AnimData>;
 
     public static function init() {
         Data.load(hxd.Res.data.entry.getText());
         font = hxd.Res.fonts.cc13.toFont();
+        fontLarge = hxd.Res.fonts.large.toFont();
         loadTiles();
+        loadNoise();
     }
 
     static function loadTiles() {
@@ -76,6 +84,26 @@ class Assets {
                     fps = 1;
                 }
                 animData.set(name, {tiles: tiles, fps: fps, loops: anim.loops != null ? anim.loops : true});
+            }
+        }
+    }
+
+    static function loadNoise() {
+        var bd = hxd.Res.gfx.noiseTexture.toBitmap();
+        bd.lock();
+        noiseWidth = bd.width;
+        noiseHeight = bd.height;
+        noiseX = new Vector<Vector<Float> >(noiseHeight);
+        noiseY = new Vector<Vector<Float> >(noiseHeight);
+        for(i in 0...noiseHeight) {
+            noiseX[i] = new Vector<Float>(noiseWidth);
+            noiseY[i] = new Vector<Float>(noiseWidth);
+        }
+        for(i in 0...noiseHeight) {
+            for(j in 0...noiseWidth) {
+                var col = bd.getPixel(j, i);
+                noiseX[i][j] = (col & 255) / 255.0 * 2 - 1;
+                noiseY[i][j] = ((col >> 8) & 255) / 255.0 * 2 - 1;
             }
         }
     }
