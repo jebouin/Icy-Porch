@@ -1,5 +1,6 @@
 package ;
 
+import hxd.res.Sound;
 import haxe.ds.Vector;
 import h2d.Tile;
 import h2d.Font;
@@ -21,6 +22,10 @@ class Assets {
     public static var tiles : StringMap<Tile>;
     public static var animData : StringMap<AnimData>;
     public static var explosionAnim : AnimData;
+    // Audio
+    public static var soundDefs : StringMap<Data.SoundDef>;
+    public static var nameToSound : StringMap<Sound>;
+    public static var nameToMusic : StringMap<Sound>;
 
     public static function init() {
         Data.load(hxd.Res.data.entry.getText());
@@ -28,6 +33,7 @@ class Assets {
         fontLarge = hxd.Res.fonts.large.toFont();
         loadTiles();
         loadNoise();
+        loadAudio();
     }
 
     static function loadTiles() {
@@ -107,6 +113,32 @@ class Assets {
                 noiseX[i][j] = (col & 255) / 255.0 * 2 - 1;
                 noiseY[i][j] = ((col >> 8) & 255) / 255.0 * 2 - 1;
             }
+        }
+    }
+
+    static function loadAudio() {
+        soundDefs = new StringMap<Data.SoundDef>();
+        for(s in Data.soundDef.all) {
+            soundDefs.set(s.name, s);
+        }
+        nameToMusic = new StringMap<Sound>();
+        function addMusic(dir:String) {
+            for(res in hxd.Res.load(dir)) {
+                var music = res.toSound();
+                music.getData();
+                nameToMusic.set(res.name.substr(0, res.name.indexOf(".")), music);
+            }
+        }
+        #if js
+        addMusic("music/exportMP3");
+        #else
+        addMusic("music/exportWAV");
+        #end
+        nameToSound = new StringMap<Sound>();
+        for(res in hxd.Res.load("sfx")) {
+            var sound = res.toSound();
+            sound.getData();
+            nameToSound.set(sound.name.substr(0, sound.name.indexOf(".")), sound);
         }
     }
 }

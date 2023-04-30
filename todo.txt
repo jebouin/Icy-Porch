@@ -1,18 +1,25 @@
 8:30 AUDIO
 - chill synthwave?
 
+
 10:30
-- starting scene
-- level design
+- sfx
 - ending scene
 
-13:00 OPTI + TESTING
+12:00
+- level design
+
+13:30 OPTI + TESTING
 - out transition is slow again
 - stop rendering during out transition
 
-14:00 BEFORE SUBMIT
-- draw cover
+14:30 BEFORE SUBMIT
 - add more keys and controller
+
+PUBLISH
+Start scene: 320*256 (cropped in game)
+LD: 640x512 (2x scaled)
+ITCH: 630x500 (2x scaled + cropped)
 
 IF TIME LEFT
 - trees and more decoration

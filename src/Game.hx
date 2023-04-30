@@ -46,7 +46,7 @@ class Game extends Scene {
     public var spawnX : Int;
     public var spawnY : Int;
     var levelText : Text;
-    var levelId : Int = 1;
+    var levelId : Int = 2;
     var transitionIn : TransitionIn;
     var transitionOut : TransitionOut;
     public var state(default, set) : GameState = Playing;
@@ -58,7 +58,7 @@ class Game extends Scene {
     var progressTimer : Float;
     var arrivedCount : Int = 0;
 
-    public function new() {
+    public function new(?fromTitle:Bool=false) {
         super();
         if(inst != null) {
             throw "Game scene already exists";
@@ -70,6 +70,11 @@ class Game extends Scene {
         loadLevel(levelId);
         background = new Background();
         transitionOut = new TransitionOut();
+        Audio.playMusic("intro", "loop");
+        fromTitle = true;
+        if(fromTitle) {
+            state = In;
+        }
     }
 
     override public function delete() {

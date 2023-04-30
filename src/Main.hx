@@ -44,6 +44,7 @@ class Main extends hxd.App {
 
     override function init() {
         Assets.init();
+        Audio.init();
         controller = new Controller();
         initController();
         engine.fullScreen = false;
@@ -66,6 +67,7 @@ class Main extends hxd.App {
     function startGame() {
         started = true;
         new Game();
+        //new Title();
     }
     function initController() {
         #if debug
