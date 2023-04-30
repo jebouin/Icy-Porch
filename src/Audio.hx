@@ -1,5 +1,7 @@
 package ;
 
+import hxd.snd.effect.Spatialization;
+import entities.Box;
 import h3d.Vector;
 import hxd.snd.Channel;
 import hxd.snd.Manager;
@@ -11,6 +13,10 @@ class Audio {
     static var musicGroup : ChannelGroup;
     static var music : Channel;
     static var currentMusicName = "";
+    static var slideSounds : Array<Channel> = [];
+    static var slideBoxes : Array<Box> = [];
+    static var slideSpatials : Array<Spatialization> = [];
+    static var jumpChan : Channel = null;
 
     public static function init() {
         manager = Manager.get();
@@ -69,11 +75,23 @@ class Audio {
         if(music == null) return;
         music.pause = false;
     }
-    public static function playSoundSpa(name:String, x:Float, y:Float, z:Float) {
+    public static function playJump() {
+        if(jumpChan != null) return;
+        var pos = music.position / music.duration;
+        jumpChan = playSound(pos < .5 || currentMusicName != "loop" ? "jumpG" : "jumpF");
+        jumpChan.onEnd = function() {
+            jumpChan = null;
+        }
+    }
+    public static function playDeliver() {
+        var pos = music.position / music.duration;
+        playSoundSpa(pos < .5 || currentMusicName != "loop" ? "deliverG" : "deliverF", Game.WIN_X, 0);
+    }
+    public static function playSoundSpa(name:String, x:Float, y:Float) {
         var chan = playSound(name, false);
         var spatial = new hxd.snd.effect.Spatialization();
         spatial.referenceDistance = 16;
-        spatial.position = new Vector(y, x, 0);
+        spatial.position = new Vector(0, x, 0);
         chan.addEffect(spatial);
         return chan;
     }
@@ -85,5 +103,34 @@ class Audio {
             vol *= def.volume;
         }
         return sound.play(loop, vol, soundGroup);
+    }
+    public static function playSlide(box:Box) {
+        stopSlide(box);
+        var chan = playSound("slide", true);
+        slideSounds.push(chan);
+        slideBoxes.push(box);
+        var spatial = new hxd.snd.effect.Spatialization();
+        spatial.referenceDistance = 80;
+        //spatial.fadeDistance = 40;
+        spatial.position = new Vector(0, box.x + 8, 0);
+        chan.addEffect(spatial);
+        slideSpatials.push(spatial);
+    }
+    public static function stopSlide(box:Box) {
+        var i = slideBoxes.indexOf(box);
+        if(i == -1) return;
+        slideSounds[i].stop();
+        slideSounds.splice(i, 1);
+        slideBoxes.splice(i, 1);
+        slideSpatials.splice(i, 1);
+    }
+    public static function update(dt:Float) {
+        for(i in 0...slideBoxes.length) {
+            var box = slideBoxes[i];
+            var spatial = slideSpatials[i];
+            spatial.position = new Vector(0, box.x + 8, 0);
+        }
+        var listener = manager.listener;
+        listener.position = new Vector(-30, Main.WIDTH2, 0);
     }
 }

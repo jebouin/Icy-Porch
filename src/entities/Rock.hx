@@ -67,5 +67,6 @@ class Rock extends Entity {
         if(broken) return;
         broken = true;
         Game.inst.fx.brokenBlock(x, y, w, h, dx, dy);
+        Audio.playSoundSpa("blockBreak", x + w / 2, y + h / 2);
     }
 }

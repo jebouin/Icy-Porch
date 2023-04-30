@@ -46,7 +46,7 @@ class Game extends Scene {
     public var spawnX : Int;
     public var spawnY : Int;
     var levelText : Text;
-    var levelId : Int = 2;
+    var levelId : Int = 3;
     var transitionIn : TransitionIn;
     var transitionOut : TransitionOut;
     public var state(default, set) : GameState = Playing;
@@ -105,6 +105,7 @@ class Game extends Scene {
                     boxes[i].arrived = true;
                     boxes[i].delete();
                     arrivedCount++;
+                    Audio.playDeliver();
                     showProgress();
                     if(arrivedCount == truck.boxTotal) {
                         levelComplete();
@@ -191,6 +192,7 @@ class Game extends Scene {
         fx.updateConstantRate(dt);
         world.x = fx.shakeX;
         world.y = fx.shakeY;
+        Audio.update(dt);
     }
 
     public function set_state(st:GameState) {
@@ -273,11 +275,16 @@ class Game extends Scene {
     }
 
     public function toggleMagnets() {
+        var cnt = 0;
         for(e in entities) {
             if(Std.isOfType(e, Magnet)) {
                 var m = cast(e, Magnet);
                 m.toggle();
+                cnt++;
             }
+        }
+        if(cnt > 0) {
+            Audio.playSound("magnetOn");
         }
     }
 

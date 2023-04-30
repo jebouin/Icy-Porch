@@ -38,6 +38,7 @@ class Box {
     public var magnet : Magnet = null;
     var magnetSOD : SecondOrderDynamics;
     public var arrived : Bool = false;
+    var prevOnGround : Bool = false;
 
     public function new() {
         bitmap = new Bitmap(Assets.tiles.get("box"));
@@ -55,6 +56,7 @@ class Box {
         if(deleted) return;
         deleted = true;
         bitmap.remove();
+        onLeaveGround();
     }
 
     public function update(dt:Float) {
@@ -142,6 +144,12 @@ class Box {
             }
             checkDeath(level);
         }
+        if(onGround && !prevOnGround && !inTruck) {
+            onHitGround();
+        } else if(!onGround && prevOnGround) {
+            onLeaveGround();
+        }
+        prevOnGround = onGround;
         bitmap.scaleX = moveSign < 0 ? -1 : 1;
         bitmap.tile = Assets.tiles.get(diagSign == 0 ? "box" : ((diagSign == 1) == (bitmap.scaleX == 1) ? "boxDiagUp" : "boxDiagDown"));
         bitmap.x = x + (moveSign < 0 ? bitmap.tile.iwidth : 0);
@@ -204,6 +212,7 @@ class Box {
         if(level.isPosInLava(x + hitbox.xMin, y + hitbox.yMin + hitbox.height) || level.isPosInLava(x + hitbox.xMin + hitbox.width, y + hitbox.yMin + hitbox.height)) {
             dead = true;
             flashTimer = 0.;
+            Audio.playSound("boxDeath");
             Game.inst.fx.boxDeath(x + bitmap.tile.width * .5, y + bitmap.tile.height * .5, bitmap.tile.width, bitmap.tile.height, 12, function() {
                 bitmap.visible = false;
             });
@@ -224,6 +233,7 @@ class Box {
         groundTimer = JUMP_COYOTE_TIME + 1.;
         jumpBufferTimer = JUMP_BUFFER_TIME + 1.;
         vy = -JUMP_VEL;
+        Audio.playJump();
         return true;
     }
 
@@ -270,6 +280,15 @@ class Box {
                 onCollide(amount - res.moveY);
             }
         }
+    }
+
+    inline function onHitGround() {
+        Audio.playSlide(this);
+    }
+
+    inline function onLeaveGround() {
+        Audio.stopSlide(this);
+        //Audio.playSound("jump");
     }
 
     public inline function getBounds() {

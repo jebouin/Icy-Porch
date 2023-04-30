@@ -86,5 +86,6 @@ class Sheet extends Entity {
         Game.inst.world.add(group, Game.LAYER_BACK_WALLS);
         render();
         sod = new SecondOrderDynamics(3.5, .4, 0., 2., Fast);
+        Audio.playSoundSpa("sheet", x + w * .5, y + h * .5);
     }
 }

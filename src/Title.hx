@@ -22,6 +22,7 @@ class Title extends Scene {
     var title : Text;
     var tuto : Text;
     var timer : Float = 0.;
+    var stateTimer : Float = 0.;
     var over : Graphics;
 
     override public function new() {
@@ -57,28 +58,30 @@ class Title extends Scene {
         super.update(dt);
         var controller = Main.inst.controller;
         timer += dt;
+        stateTimer += dt;
         if(state == Idle) {
             if(controller.isPressed(Action.jump)) {
                 state = Out;
-                timer = 0.;
+                stateTimer = 0.;
                 Audio.stopMusic(OUT_TIME * .8);
+                Audio.playSound("start");
             }
             tuto.y = TUTO_Y + Math.sin(timer * 3.5) * 4.;
-            var dist = BACK_TO_Y - BACK_FROM_Y;
-            var mid = (BACK_TO_Y + BACK_FROM_Y) * .5;
-            back.y = mid + Math.cos(timer * .5) * dist * .5;
         } else if(state == Out) {
-            if(timer > OUT_TIME * .25) {
+            if(stateTimer > OUT_TIME * .25) {
                 tuto.visible = false;
             } else {
-                tuto.visible = timer % .1 < .05;
+                tuto.visible = stateTimer % .1 < .05;
             }
-            var t = timer / OUT_TIME;
+            var t = stateTimer / OUT_TIME;
             over.alpha = t * t;
-            if(timer > OUT_TIME) {
+            if(stateTimer > OUT_TIME) {
                 delete();
                 new Game();
             }
         }
+        var dist = BACK_TO_Y - BACK_FROM_Y;
+        var mid = (BACK_TO_Y + BACK_FROM_Y) * .5;
+        back.y = mid + Math.cos(timer * .5) * dist * .5;
     }
 }

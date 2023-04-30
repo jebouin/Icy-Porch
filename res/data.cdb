@@ -240,7 +240,52 @@
 					"kind": null
 				}
 			],
-			"lines": [],
+			"lines": [
+				{
+					"name": "boxDeath",
+					"volume": 1
+				},
+				{
+					"name": "slide",
+					"volume": 0.7
+				},
+				{
+					"name": "jumpG",
+					"volume": 0.85
+				},
+				{
+					"name": "jumpF",
+					"volume": 0.85
+				},
+				{
+					"name": "sheet",
+					"volume": 1
+				},
+				{
+					"name": "deliverG",
+					"volume": 1
+				},
+				{
+					"name": "deliverF",
+					"volume": 1
+				},
+				{
+					"name": "start",
+					"volume": 0.9
+				},
+				{
+					"name": "magnetOn",
+					"volume": 1
+				},
+				{
+					"name": "magnetOff",
+					"volume": 1
+				},
+				{
+					"name": "blockBreak",
+					"volume": 1
+				}
+			],
 			"separators": [],
 			"props": {}
 		},
