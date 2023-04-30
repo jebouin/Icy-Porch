@@ -1,11 +1,13 @@
 package entities;
 
+import h2d.filter.ColorMatrix;
 import h2d.col.Point;
 import h2d.col.IBounds;
 import h2d.Bitmap;
 import Controller;
 
 class Box {
+    public static inline var DIE_TIME = 2.;
     public static inline var MOVE_VEL = 80.;
     public static inline var FALL_VEL = 120.;
     public static inline var GRAVITY = .998;
@@ -13,6 +15,7 @@ class Box {
     public static inline var JUMP_VEL = 275.;
     public static inline var JUMP_COYOTE_TIME = .1;
     public static inline var JUMP_BUFFER_TIME = .15;
+    public static inline var FLASH_TIME = .05;
     var bitmap : Bitmap;
     public var hitbox : IBounds = IBounds.fromValues(1, 1, 13, 9);
     public var x : Int = 0;
@@ -27,7 +30,10 @@ class Box {
     var moveSign : Int = 1;
     var frozen : Bool = false;
     public var dead : Bool = false;
+    var dieTimer : Float = 0.;
     var id : Int;
+    var flashTimer : Float = FLASH_TIME + 1.;
+    var flashFilter : ColorMatrix;
 
     public function new() {
         bitmap = new Bitmap(Assets.tiles.get("box"));
@@ -36,6 +42,9 @@ class Box {
         y = Game.inst.spawnY - 10;
         bitmap.x = x;
         bitmap.y = y;
+        var m = new h3d.Matrix();
+        m.colorSet(0xFFFFFF);
+        flashFilter = new ColorMatrix(m);
     }
 
     public function delete() {
@@ -45,6 +54,13 @@ class Box {
     }
 
     public function update(dt:Float) {
+        if(dead) {
+            dieTimer += dt;
+            if(dieTimer > DIE_TIME) {
+                delete();
+            }
+            return;
+        }
         var level = Game.inst.level;
         var onGround = level.rectCollision(x + hitbox.xMin, y + hitbox.yMin + 1, hitbox.width, hitbox.height);
         id = Game.inst.boxes.indexOf(this);
@@ -124,6 +140,19 @@ class Box {
     function checkDeath(level:Level) {
         if(level.isPosInLava(x + hitbox.xMin, y + hitbox.yMin + hitbox.height) || level.isPosInLava(x + hitbox.xMin + hitbox.width, y + hitbox.yMin + hitbox.height)) {
             dead = true;
+            flashTimer = 0.;
+            Game.inst.fx.boxDeath(x + bitmap.tile.width * .5, y + bitmap.tile.height * .5, bitmap.tile.width, bitmap.tile.height, 12, function() {
+                bitmap.visible = false;
+            });
+        }
+    }
+
+    public function updateConstantRate(dt:Float) {
+        flashTimer += dt;
+        if(flashTimer <= FLASH_TIME || (flashTimer > FLASH_TIME * 2 && flashTimer <= FLASH_TIME * 3)) {
+            bitmap.filter = flashFilter;
+        } else {
+            bitmap.filter = null;
         }
     }
 

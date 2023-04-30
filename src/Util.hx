@@ -120,6 +120,24 @@ class Util {
 		return (a % TAU + TAU) % TAU;
 	}
 
+	public static inline function randi(lo:Int, hi:Int) {
+		return lo + Std.random(hi - lo + 1);
+	}
+
+	public static inline function randf(lo:Float, hi:Float) {
+		return lo + Math.random() * (hi - lo);
+	}
+
+	public static inline function randCircle(rmin:Float, rmax:Float) {
+		var d = randf(rmin, rmax);
+		var a = Math.random() * TAU;
+		return new Point(d * Math.cos(a), d * Math.sin(a));
+	}
+
+	public static inline function randSign() : Int {
+		return Std.random(2) * 2 - 1;
+	}
+
 	public static inline function distSq(x1:Float, y1:Float, x2:Float, y2:Float) {
 		var dx = x1 - x2;
 		var dy = y1 - y2;

@@ -1,6 +1,20 @@
-- explosion and fx
-- better truck
+TODO
+- break block
+- truck hud
+- house
+- trees and more decoration
+
+4:00 AUDIO
+- chill synthwave?
+
+8:00
+- more level design
+
+12:00 OPTI + TESTING
+- out transition is slow again
 - stop rendering during out transition
+
+14:00 BEFORE SUBMIT
 - draw cover
 - add more keys and controller
 

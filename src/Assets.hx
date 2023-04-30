@@ -20,6 +20,7 @@ class Assets {
     public static var fontLarge : Font;
     public static var tiles : StringMap<Tile>;
     public static var animData : StringMap<AnimData>;
+    public static var explosionAnim : AnimData;
 
     public static function init() {
         Data.load(hxd.Res.data.entry.getText());
@@ -86,6 +87,7 @@ class Assets {
                 animData.set(name, {tiles: tiles, fps: fps, loops: anim.loops != null ? anim.loops : true});
             }
         }
+        explosionAnim = {tiles: hxd.Res.gfx.explosionLarge.toTile().gridFlatten(64, -32, -32), fps: 60, loops: false};
     }
 
     static function loadNoise() {

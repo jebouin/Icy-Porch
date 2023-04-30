@@ -80,6 +80,9 @@ class Main extends hxd.App {
         controller.bindKey(Action.freeze, Key.C);
         controller.bindKey(Action.retry, Key.R);
         #end
+        controller.bindPad(Action.jump, PadButton.X);
+        controller.bindPad(Action.freeze, PadButton.A);
+        controller.bindPad(Action.retry, PadButton.START);
     }
     function onEvent(event:hxd.Event) {
         if(!started) return;

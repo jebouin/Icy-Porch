@@ -16,6 +16,9 @@ class Collision {
     public static inline function iDet(x1:Int, y1:Int, x2:Int, y2:Int) : Int {
         return x1 * y2 - x2 * y1;
     }
+    public static inline function det(x1:Float, y1:Float, x2:Float, y2:Float) : Float {
+        return x1 * y2 - x2 * y1;
+    }
 
     public static inline function isColinear(x1:Int, y1:Int, x2:Int, y2:Int, x3:Int, y3:Int) : Bool {
         return iDet(x2 - x1, y2 - y1, x3 - x1, y3 - y1) == 0;

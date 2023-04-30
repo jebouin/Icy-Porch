@@ -33,10 +33,11 @@ class Game extends Scene {
     public var entities : Array<Entity> = [];
     public var boxes : Array<Box> = [];
     var background : Background;
+    public var fx : Fx;
     public var spawnX : Int;
     public var spawnY : Int;
     var levelText : Text;
-    var levelId : Int = 2;
+    var levelId : Int = 1;
     var transitionIn : TransitionIn;
     var transitionOut : TransitionOut;
     public var state(default, set) : GameState = Playing;
@@ -48,6 +49,7 @@ class Game extends Scene {
             throw "Game scene already exists";
         }
         inst = this;
+        fx = new Fx(LAYER_FX_FRONT, LAYER_FX_MID);
         levelText = new Text(Assets.fontLarge, hud);
         level = new Level();
         loadLevel(levelId);
@@ -64,20 +66,22 @@ class Game extends Scene {
         for(e in entities) {
             e.delete();
         }
+        fx.delete();
     }
 
     override public function update(dt:Float) {
         super.update(dt);
         stateTimer += dt;
         if(state == Playing) {
-            var i = 0, failed = false;
+            var i = 0, failed = false, dead = false;
             while(i < boxes.length) {
                 boxes[i].update(dt);
                 if(boxes[i].dead) {
-                    failed = true;
+                    dead = true;
                 }
                 if(boxes[i].deleted) {
                     boxes.splice(i, 1);
+                    failed = true;
                 } else {
                     i++;
                 }
@@ -102,8 +106,12 @@ class Game extends Scene {
             if(Main.inst.controller.isPressed(Action.retry)) {
                 levelFailed();
             }
+            if(dead && !failed && Main.inst.controller.isPressed(Action.jump)) {
+                levelFailed();
+            }
             level.update(dt);
             background.update(dt);
+            fx.update(dt);
         } if(state == In) {
             transitionIn.update(dt);
             if(stateTimer >= TRANSITION_TIME_IN) {
@@ -111,6 +119,7 @@ class Game extends Scene {
             }
             level.update(dt);
             background.update(dt);
+            fx.update(dt);
         } else if(state == Out) {
             transitionOut.update(dt);
             if(stateTimer >= TRANSITION_TIME_OUT) {
@@ -118,6 +127,15 @@ class Game extends Scene {
                 state = In;
             }
         }
+    }
+
+    override public function updateConstantRate(dt:Float) {
+        for(box in boxes) {
+            box.updateConstantRate(dt);
+        }
+        fx.updateConstantRate(dt);
+        world.x = fx.shakeX;
+        world.y = fx.shakeY;
     }
 
     public function set_state(st:GameState) {
@@ -151,6 +169,7 @@ class Game extends Scene {
         levelText.text = level.title;
         levelText.x = Main.WIDTH * .5 - levelText.textWidth * .5;
         levelText.y = 1;
+        fx.clear();
         return true;
     }
 

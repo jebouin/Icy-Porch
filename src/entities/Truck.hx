@@ -13,7 +13,7 @@ class Truck extends Entity {
         this.boxTotal = boxCount;
         this.spawnTime = this.spawnTimer = (spawnTimeTiles * Level.TS - 13) / Box.MOVE_VEL;
         super(Assets.animData.get("truck"), Game.LAYER_TRUCK, x, y);
-        setColliderRect(48, 32);
+        setColliderRect(64, 32);
     }
 
     public function hit() {

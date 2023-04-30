@@ -30,6 +30,8 @@ class LevelRender {
         Game.inst.world.add(walls, Game.LAYER_WALLS);
         back = level.l_Back.render();
         Game.inst.world.add(back, Game.LAYER_BACK_WALLS);
+        walls.x = back.x = Level.WORLD_X;
+        walls.y = back.y = Level.WORLD_Y;
     }
 
     public function delete() {
@@ -43,6 +45,8 @@ class Level {
     static var DY = [-1, 0, 1, 0];
     public static inline var TS = 16;
     public static inline var HTS = 8;
+    public static inline var WORLD_X = -TS;
+    public static inline var WORLD_Y = -TS;
     public static inline var TILE_ICE = 1;
     public static inline var TILE_ICE_DR = 2;
     public static inline var TILE_ICE_DL = 3;
@@ -105,12 +109,14 @@ class Level {
 
     public function loadEntities() {
         for(t in level.l_Entities.all_Truck) {
-            new Truck(t.pixelX, t.pixelY, t.f_BoxCount, t.f_SpawnTimeTiles);
-            Game.inst.spawnX = t.pixelX + t.width - 16;
-            Game.inst.spawnY = t.pixelY + t.height - 10;
+            var x = t.pixelX + WORLD_X;
+            var y = t.pixelY + WORLD_Y;
+            new Truck(x, y, t.f_BoxCount, t.f_SpawnTimeTiles);
+            Game.inst.spawnX = x + t.width - 16;
+            Game.inst.spawnY = y + t.height - 10;
         }
         for(r in level.l_Entities.all_Rock) {
-            new Rock(r.pixelX, r.pixelY);
+            new Rock(r.pixelX + WORLD_X, r.pixelY + WORLD_Y);
         }
     }
 
@@ -119,8 +125,8 @@ class Level {
             var expand = false;
             var x1 = -1, x2 = -1;
             for(j in 0...width) {
-                var x = j * TS;
-                var y = i * TS + LAVA_OFF_Y;
+                var x = j * TS + WORLD_X;
+                var y = i * TS + LAVA_OFF_Y + WORLD_Y;
                 var t = getTrapTile(i, j);
                 var tu = getTrapTile(i - 1, j);
                 if(t != TILE_TRAP_LAVA || tu == TILE_TRAP_LAVA) {
@@ -151,7 +157,6 @@ class Level {
                 if(col == Empty) continue;
                 var comp = getCollisionComponent(i, j);
                 var pts = getComponentCorners(comp);
-                trace(pts);
                 colliders.push(new IPolygon(pts));
             }
         }
@@ -171,13 +176,13 @@ class Level {
         return level.l_Walls.getInt(j, i);
     }
     public function isPosInLava(x:Float, y:Float, ?ignoreSurface:Bool=false) {
-        var i = Std.int(y / TS);
-        var j = Std.int(x / TS);
+        var i = Std.int((y - WORLD_Y) / TS);
+        var j = Std.int((x - WORLD_X) / TS);
         if(!isInLevel(i, j)) return false;
         var tile = getTrapTile(i, j);
         if(tile != TILE_TRAP_LAVA) return false;
         var tileUp = i == 0 ? 0 : getTrapTile(i - 1, j);
-        return ignoreSurface || tileUp == TILE_TRAP_LAVA || y - i * TS > LAVA_OFF_Y;
+        return ignoreSurface || tileUp == TILE_TRAP_LAVA || y - WORLD_Y - i * TS > LAVA_OFF_Y;
     }
     inline function getCollisionShape(i:Int, j:Int) {
         var val = level.l_Walls.getInt(j, i);
@@ -259,7 +264,7 @@ class Level {
             }
             u = graph.get(u);
             var pos = utp(u);
-            ans.push(new IPoint(pos.x, pos.y));
+            ans.push(new IPoint(WORLD_X + pos.x, WORLD_Y + pos.y));
             if(u == start) {
                 break;
             }

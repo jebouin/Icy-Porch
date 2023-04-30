@@ -107,11 +107,11 @@
 					"name": "truck",
 					"x": 0,
 					"y": 16,
-					"width": 96,
+					"width": 128,
 					"height": 33,
 					"centerX": 0,
 					"centerY": 0,
-					"frameWidth": 48,
+					"frameWidth": 64,
 					"frameHeight": 33,
 					"frameCount": 2,
 					"fps": 2
