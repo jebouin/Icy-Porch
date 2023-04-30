@@ -1,1 +1,8 @@
-- Use intgrid for collisions
+- explosion and fx
+- better truck
+- stop rendering during out transition
+- draw cover
+- add more keys and controller
+
+
+Rect(0, 64, 16, 16)

@@ -1,5 +1,6 @@
 package ;
 
+import h2d.col.Point;
 import h2d.Tile;
 import hxd.Res;
 import h2d.Bitmap;
@@ -48,6 +49,7 @@ class Flake extends BatchElement {
         for(i in 0...60) {
             applyAcceleration(1. / 60.);
         }
+        visible = true;
     }
 
     override public function update(dt:Float) {
@@ -81,6 +83,9 @@ class Flake extends BatchElement {
         yy += vy;
         x = Std.int(xx);
         y = Std.int(yy);
+        if(visible && Game.inst.level.pointCollision(new Point(xx, yy))) {
+            visible = false;
+        }
     }
 }
 

@@ -23,6 +23,7 @@ class Game extends Scene {
     public static var LAYER_BACK_WALLS = _layer++;
     public static var LAYER_FX_MID = _layer++;
     public static var LAYER_BOX = _layer++;
+    public static var LAYER_LAVA = _layer++;
     public static var LAYER_TRUCK = _layer++;
     public static var LAYER_WALLS = _layer++;
     public static var LAYER_FX_FRONT = _layer++;
@@ -35,7 +36,7 @@ class Game extends Scene {
     public var spawnX : Int;
     public var spawnY : Int;
     var levelText : Text;
-    var levelId : Int = 0;
+    var levelId : Int = 2;
     var transitionIn : TransitionIn;
     var transitionOut : TransitionOut;
     public var state(default, set) : GameState = Playing;
@@ -69,15 +70,20 @@ class Game extends Scene {
         super.update(dt);
         stateTimer += dt;
         if(state == Playing) {
-            levelComplete();
-            var i = 0;
+            var i = 0, failed = false;
             while(i < boxes.length) {
                 boxes[i].update(dt);
+                if(boxes[i].dead) {
+                    failed = true;
+                }
                 if(boxes[i].deleted) {
                     boxes.splice(i, 1);
                 } else {
                     i++;
                 }
+            }
+            if(failed) {
+                levelFailed();
             }
             i = 0;
             while(i < entities.length) {
@@ -93,12 +99,17 @@ class Game extends Scene {
                 levelComplete();
             }
             #end
+            if(Main.inst.controller.isPressed(Action.retry)) {
+                levelFailed();
+            }
+            level.update(dt);
             background.update(dt);
         } if(state == In) {
             transitionIn.update(dt);
             if(stateTimer >= TRANSITION_TIME_IN) {
                 state = Playing;
             }
+            level.update(dt);
             background.update(dt);
         } else if(state == Out) {
             transitionOut.update(dt);
@@ -152,6 +163,17 @@ class Game extends Scene {
 
     public function levelComplete() {
         state = Out;
+    }
+
+    public function levelFailed() {
+        loadLevel(levelId);
+    }
+
+    public function onBoxCollision(i:Int, j:Int) {
+        // Swap box i and j, hacky way to mitigate non-symmetrical collisions
+        var tmp = boxes[i];
+        boxes[i] = boxes[j];
+        boxes[j] = tmp;
     }
 
     public function removeEntities() {

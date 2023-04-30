@@ -9,12 +9,12 @@ class Box {
     public static inline var MOVE_VEL = 80.;
     public static inline var FALL_VEL = 120.;
     public static inline var GRAVITY = .998;
-    public static inline var GRAVITY_JUMP = .95;
-    public static inline var JUMP_VEL = 300.;
+    public static inline var GRAVITY_JUMP = .94;
+    public static inline var JUMP_VEL = 275.;
     public static inline var JUMP_COYOTE_TIME = .1;
     public static inline var JUMP_BUFFER_TIME = .15;
     var bitmap : Bitmap;
-    public var hitbox : IBounds = IBounds.fromValues(1, 0, 13, 10);
+    public var hitbox : IBounds = IBounds.fromValues(1, 1, 13, 9);
     public var x : Int = 0;
     public var y : Int = 0;
     public var rx : Float = 0.;
@@ -26,12 +26,14 @@ class Box {
     public var deleted : Bool = false;
     var moveSign : Int = 1;
     var frozen : Bool = false;
+    public var dead : Bool = false;
+    var id : Int;
 
     public function new() {
         bitmap = new Bitmap(Assets.tiles.get("box"));
         Game.inst.world.add(bitmap, Game.LAYER_BOX);
-        x = Game.inst.spawnX;
-        y = Game.inst.spawnY;
+        x = Game.inst.spawnX + 36;
+        y = Game.inst.spawnY - 10;
         bitmap.x = x;
         bitmap.y = y;
     }
@@ -45,6 +47,7 @@ class Box {
     public function update(dt:Float) {
         var level = Game.inst.level;
         var onGround = level.rectCollision(x + hitbox.xMin, y + hitbox.yMin + 1, hitbox.width, hitbox.height);
+        id = Game.inst.boxes.indexOf(this);
         if(onGround) {
             groundTimer = 0.;
         } else {
@@ -77,8 +80,7 @@ class Box {
         }
         vy = Util.sodStep(vy, FALL_VEL, jumping ? GRAVITY_JUMP : GRAVITY, dt);
         tryMoveX(vx * dt, function(_) {
-            moveSign *= -1;
-            vx *= -1;
+            onHitHorizontal();
         });
         tryMoveY(vy * dt, function(_) {
             vy = 0;
@@ -94,10 +96,17 @@ class Box {
                 diagSign = 1;
             }
         }
+        checkDeath(level);
         bitmap.scaleX = moveSign < 0 ? -1 : 1;
         bitmap.tile = Assets.tiles.get(diagSign == 0 ? "box" : ((diagSign == 1) == (bitmap.scaleX == 1) ? "boxDiagUp" : "boxDiagDown"));
         bitmap.x = x + (moveSign < 0 ? bitmap.tile.iwidth : 0);
         bitmap.y = y;
+    }
+
+
+    inline function onHitHorizontal() {
+        vx *= -1;
+        moveSign *= -1;
     }
 
     function stickToGround(level) {
@@ -109,6 +118,12 @@ class Box {
                 y += i - 1;
                 break;
             }
+        }
+    }
+
+    function checkDeath(level:Level) {
+        if(level.isPosInLava(x + hitbox.xMin, y + hitbox.yMin + hitbox.height) || level.isPosInLava(x + hitbox.xMin + hitbox.width, y + hitbox.yMin + hitbox.height)) {
+            dead = true;
         }
     }
 
@@ -125,7 +140,11 @@ class Box {
         var amount = Math.round(rx);
         if(amount != 0) {
             rx -= amount;
-            var res = Game.inst.level.sweptRectCollisionHorizontal(x + hitbox.xMin, y + hitbox.yMin, hitbox.width, hitbox.height, amount);
+            var res = Game.inst.level.sweptRectCollisionHorizontal(x + hitbox.xMin, y + hitbox.yMin, hitbox.width, hitbox.height, amount, id);
+            if(res.collidedBox != null) {
+                Game.inst.onBoxCollision(id, Game.inst.boxes.indexOf(res.collidedBox));
+                res.collidedBox.onHitHorizontal();
+            }
             x += res.moveX;
             y += res.moveY;
             if(res.moveX != amount && onCollide != null) {

@@ -115,6 +115,15 @@
 					"frameHeight": 33,
 					"frameCount": 2,
 					"fps": 2
+				},
+				{
+					"name": "rock",
+					"x": 0,
+					"y": 64,
+					"width": 16,
+					"height": 16,
+					"centerX": 0,
+					"centerY": 0
 				}
 			],
 			"separators": [],
