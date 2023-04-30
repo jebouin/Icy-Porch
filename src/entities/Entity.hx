@@ -1,5 +1,6 @@
 package entities;
 
+import h2d.col.IBounds;
 import h2d.col.IPolygon;
 import h2d.col.IPoint;
 import Assets.AnimData;
@@ -9,7 +10,8 @@ class Entity {
     public var x : Int;
     public var y : Int;
     public var deleted : Bool;
-    var collider : IPolygon = null;
+    public var collider : IPolygon = null;
+    public var bounds : IBounds = null;
 
     public function new(animData:AnimData, layer:Int, x:Int, y:Int, ?collider:IPolygon) {
         this.collider = collider;
@@ -26,6 +28,9 @@ class Entity {
         if(deleted) return;
         deleted = true;
         anim.remove();
+        if(collider != null) {
+            Game.inst.level.colliders.remove(collider);
+        }
     }
 
     public function update(dt:Float) {
@@ -45,5 +50,6 @@ class Entity {
             new IPoint(x + w, y)
         ]);
         Game.inst.level.colliders.push(collider);
+        bounds = IBounds.fromValues(x, y, w, h);
     }
 }

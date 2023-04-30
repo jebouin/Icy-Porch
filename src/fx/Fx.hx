@@ -269,4 +269,8 @@ class Fx {
             onHitStopDone();
         };
     }
+
+    public function brokenBlock(x:Float, y:Float, dx:Float, dy:Float) {
+        screenShake(2, 2, 2., 1., 0);
+    }
 }

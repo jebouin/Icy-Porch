@@ -124,6 +124,24 @@
 					"height": 16,
 					"centerX": 0,
 					"centerY": 0
+				},
+				{
+					"name": "sheetOff",
+					"x": 0,
+					"y": 96,
+					"width": 24,
+					"height": 24,
+					"centerX": 0,
+					"centerY": 0
+				},
+				{
+					"name": "sheetOn",
+					"x": 24,
+					"y": 96,
+					"width": 24,
+					"height": 24,
+					"centerX": 0,
+					"centerY": 0
 				}
 			],
 			"separators": [],

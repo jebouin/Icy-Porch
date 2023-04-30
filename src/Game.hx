@@ -32,6 +32,7 @@ class Game extends Scene {
     public var level : Level;
     public var entities : Array<Entity> = [];
     public var boxes : Array<Box> = [];
+    public var truck : Truck;
     var background : Background;
     public var fx : Fx;
     public var spawnX : Int;
@@ -165,6 +166,11 @@ class Game extends Scene {
     public function loadLevel(i:Int) {
         if(!level.loadLevelById(i)) {
             return false;
+        }
+        for(e in entities) {
+            if(Std.isOfType(e, Truck)) {
+                truck = cast(e, Truck);
+            }
         }
         levelText.text = level.title;
         levelText.x = Main.WIDTH * .5 - levelText.textWidth * .5;

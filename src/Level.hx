@@ -112,11 +112,14 @@ class Level {
             var x = t.pixelX + WORLD_X;
             var y = t.pixelY + WORLD_Y;
             new Truck(x, y, t.f_BoxCount, t.f_SpawnTimeTiles);
-            Game.inst.spawnX = x + t.width - 16;
-            Game.inst.spawnY = y + t.height - 10;
+            Game.inst.spawnX = x + t.width - 32;
+            Game.inst.spawnY = y + t.height - 10 - 9;
         }
         for(r in level.l_Entities.all_Rock) {
             new Rock(r.pixelX + WORLD_X, r.pixelY + WORLD_Y);
+        }
+        for(s in level.l_Entities.all_Sheet) {
+            new Sheet(s.pixelX + WORLD_X, s.pixelY + WORLD_Y, s.width, s.height);
         }
     }
 

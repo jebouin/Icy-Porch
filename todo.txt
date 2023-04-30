@@ -1,13 +1,18 @@
 TODO
-- break block
+- finish block
+- magnet
 - truck hud
-- house
-- trees and more decoration
+- house and win condition
 
-4:00 AUDIO
+4:00
+- Starting scene
+- Level design
+- Ending scene
+
+6:00 AUDIO
 - chill synthwave?
 
-8:00
+10:00
 - more level design
 
 12:00 OPTI + TESTING
@@ -18,5 +23,7 @@ TODO
 - draw cover
 - add more keys and controller
 
+IF TIME LEFT
+- trees and more decoration
 
-Rect(0, 64, 16, 16)
+Rect(0, 96, 32, 16)

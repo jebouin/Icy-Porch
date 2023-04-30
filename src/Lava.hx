@@ -35,6 +35,8 @@ class LavaLake {
     var depth : Array<Float>;
     var pos : Array<Float>;
     var timer : Float = 0.;
+    var noiseOffsetX : Int;
+    var noiseOffsetY : Int;
 
     public function new(y:Int, x1:Int, x2:Int) {
         this.y = y;
@@ -53,15 +55,17 @@ class LavaLake {
             }
         }
         Game.inst.level.lava.lakes.push(this);
+        noiseOffsetX = Std.random(Main.WIDTH);
+        noiseOffsetY = Std.random(Main.HEIGHT);
     }
 
     public function update(dt:Float) {
         timer += dt;
         var len = x2 - x1 + 1;
         for(i in 0 ... len) {
-            var wx = Std.int(60 * timer + i * 2) % Assets.noiseWidth;
-            var wxr = (Math.floor(-10 * timer + i * 2) % Assets.noiseWidth + Assets.noiseWidth) % Assets.noiseWidth;
-            var wy = Std.int(60 * timer) % Assets.noiseHeight;
+            var wx = Std.int(60 * timer + i * 2 + noiseOffsetX) % Assets.noiseWidth;
+            var wxr = (Math.floor(-10 * timer + i * 2 + noiseOffsetX) % Assets.noiseWidth + Assets.noiseWidth) % Assets.noiseWidth;
+            var wy = Std.int(60 * timer + noiseOffsetY) % Assets.noiseHeight;
             pos[i] = 8 * (Assets.noiseX[wy][wx] + .5 * Assets.noiseY[wy][wxr]);
         }
     }

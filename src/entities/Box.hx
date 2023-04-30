@@ -8,11 +8,11 @@ import Controller;
 
 class Box {
     public static inline var DIE_TIME = 2.;
-    public static inline var MOVE_VEL = 80.;
+    public static inline var MOVE_VEL = 60.;
     public static inline var FALL_VEL = 120.;
-    public static inline var GRAVITY = .998;
-    public static inline var GRAVITY_JUMP = .94;
-    public static inline var JUMP_VEL = 275.;
+    public static inline var GRAVITY = .995;
+    public static inline var GRAVITY_JUMP = .85;
+    public static inline var JUMP_VEL = 200.;
     public static inline var JUMP_COYOTE_TIME = .1;
     public static inline var JUMP_BUFFER_TIME = .15;
     public static inline var FLASH_TIME = .05;
@@ -34,12 +34,13 @@ class Box {
     var id : Int;
     var flashTimer : Float = FLASH_TIME + 1.;
     var flashFilter : ColorMatrix;
+    var inTruck : Bool = true;
 
     public function new() {
         bitmap = new Bitmap(Assets.tiles.get("box"));
         Game.inst.world.add(bitmap, Game.LAYER_BOX);
-        x = Game.inst.spawnX + 36;
-        y = Game.inst.spawnY - 10;
+        x = Game.inst.spawnX;
+        y = Game.inst.spawnY;
         bitmap.x = x;
         bitmap.y = y;
         var m = new h3d.Matrix();
@@ -94,25 +95,37 @@ class Box {
         } else if(onGround && controller.isDown(Action.jump) && jumpBufferTimer <= JUMP_BUFFER_TIME) {
             jumped = jump();
         }
-        vy = Util.sodStep(vy, FALL_VEL, jumping ? GRAVITY_JUMP : GRAVITY, dt);
-        tryMoveX(vx * dt, function(_) {
-            onHitHorizontal();
-        });
-        tryMoveY(vy * dt, function(_) {
-            vy = 0;
-        });
         var diagSign = 0;
-        if(onGround && !jumped) {
-            stickToGround(level);
-            var slopeLeft = level.getSlope(x + hitbox.xMin, y + hitbox.yMin + hitbox.height + 1);
-            var slopeRight = level.getSlope(x + hitbox.xMin + hitbox.width, y + hitbox.yMin + hitbox.height + 1);
-            if(slopeLeft.x == slopeLeft.y) {
-                diagSign = -1;
-            } else if(slopeRight.x == -slopeRight.y) {
-                diagSign = 1;
+        if(inTruck) {
+            vy = 0.;
+            vx = MOVE_VEL;
+            tryMoveNoCol(vx * dt, vy * dt);
+            var bounds = getBounds();
+            if(!Game.inst.truck.bounds.intersects(bounds)) {
+                inTruck = false;
             }
+        } else {
+            vy = Util.sodStep(vy, FALL_VEL, jumping ? GRAVITY_JUMP : GRAVITY, dt);
+            var dx = vx * dt;
+            var dy = vy * dt;
+            tryMoveX(dx, function(_) {
+                onHitHorizontal();
+            });
+            tryMoveY(dy, function(_) {
+                vy = 0;
+            });
+            if(onGround && !jumped) {
+                stickToGround(level);
+                var slopeLeft = level.getSlope(x + hitbox.xMin, y + hitbox.yMin + hitbox.height + 1);
+                var slopeRight = level.getSlope(x + hitbox.xMin + hitbox.width, y + hitbox.yMin + hitbox.height + 1);
+                if(slopeLeft.x == slopeLeft.y) {
+                    diagSign = -1;
+                } else if(slopeRight.x == -slopeRight.y) {
+                    diagSign = 1;
+                }
+            }
+            checkDeath(level);
         }
-        checkDeath(level);
         bitmap.scaleX = moveSign < 0 ? -1 : 1;
         bitmap.tile = Assets.tiles.get(diagSign == 0 ? "box" : ((diagSign == 1) == (bitmap.scaleX == 1) ? "boxDiagUp" : "boxDiagDown"));
         bitmap.x = x + (moveSign < 0 ? bitmap.tile.iwidth : 0);
@@ -133,6 +146,21 @@ class Box {
             if(level.pointCollision(new Point(x1, y2 + i)) || level.pointCollision(new Point(x2, y2 + i))) {
                 y += i - 1;
                 break;
+            }
+        }
+    }
+
+    function checkEntityCollision(dx:Float, dy:Float) {
+        var x1 = this.x + hitbox.xMin + dx;
+        var y1 = this.y + hitbox.yMin + dy;
+        var x2 = x1 + hitbox.width;
+        var y2 = y1 + hitbox.height;
+        for(e in Game.inst.entities) {
+            if((dx != 0 || dy < 0) && Std.isOfType(e, Rock)) {
+                var rock = cast(e, Rock);
+                var bounds = rock.bounds;
+                if(x2 < bounds.xMin || x1 > bounds.xMax || y2 < bounds.yMin || y1 > bounds.yMax) continue;
+                rock.hit(dx, dy);
             }
         }
     }
@@ -164,10 +192,22 @@ class Box {
         return true;
     }
 
+    public function tryMoveNoCol(dx:Float, dy:Float) {
+        rx += dx;
+        var amount = Math.round(rx);
+        rx -= amount;
+        x += amount;
+        ry += dy;
+        amount = Math.round(ry);
+        ry -= amount;
+        y += amount;
+    }
+
     public function tryMoveX(dx:Float, ?onCollide:Int->Void) {
         rx += dx;
         var amount = Math.round(rx);
         if(amount != 0) {
+            checkEntityCollision(amount, 0);
             rx -= amount;
             var res = Game.inst.level.sweptRectCollisionHorizontal(x + hitbox.xMin, y + hitbox.yMin, hitbox.width, hitbox.height, amount, id);
             if(res.collidedBox != null) {
@@ -186,6 +226,7 @@ class Box {
         ry += dy;
         var amount = Math.round(ry);
         if(amount != 0) {
+            checkEntityCollision(0, amount);
             ry -= amount;
             var res = Game.inst.level.sweptRectCollisionVertical(x + hitbox.xMin, y + hitbox.yMin, hitbox.width, hitbox.height, amount);
             x += res.moveX;
@@ -194,5 +235,9 @@ class Box {
                 onCollide(amount - res.moveY);
             }
         }
+    }
+
+    public inline function getBounds() {
+        return IBounds.fromValues(x + hitbox.xMin, y + hitbox.yMin, hitbox.width, hitbox.height);
     }
 }
