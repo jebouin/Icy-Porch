@@ -28,6 +28,7 @@ class Sheet extends Entity {
         if(isOn) {
             group.remove();
         }
+        super.delete();
     }
 
     override public function update(dt:Float) {

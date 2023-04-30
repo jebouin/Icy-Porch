@@ -70,18 +70,18 @@ class Main extends hxd.App {
     function initController() {
         #if debug
         controller.bindKey(Action.jump, Key.N);
-        controller.bindKey(Action.freeze, Key.E);
+        controller.bindKey(Action.magnet, Key.E);
         controller.bindKey(Action.retry, Key.F);
         controller.bindKey(Action.debugNextLevel, Key.I);
         controller.bindKey(Action.debugLeft, Key.R);
         controller.bindKey(Action.debugRight, Key.T);
         #else
         controller.bindKey(Action.jump, Key.X);
-        controller.bindKey(Action.freeze, Key.C);
+        controller.bindKey(Action.magnet, Key.C);
         controller.bindKey(Action.retry, Key.R);
         #end
         controller.bindPad(Action.jump, PadButton.X);
-        controller.bindPad(Action.freeze, PadButton.A);
+        controller.bindPad(Action.magnet, PadButton.A);
         controller.bindPad(Action.retry, PadButton.START);
     }
     function onEvent(event:hxd.Event) {

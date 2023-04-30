@@ -35,6 +35,8 @@ class Box {
     var flashTimer : Float = FLASH_TIME + 1.;
     var flashFilter : ColorMatrix;
     var inTruck : Bool = true;
+    var magnet : Magnet = null;
+    var magnetSOD : SecondOrderDynamics;
 
     public function new() {
         bitmap = new Bitmap(Assets.tiles.get("box"));
@@ -77,9 +79,6 @@ class Box {
         if(controller.isPressed(Action.debugRight)) {
             moveSign = 1;
         }
-        if(controller.isPressed(Action.freeze)) {
-            frozen = !frozen;
-        }
         vx = frozen ? 0 : moveSign * MOVE_VEL;
         var jumping = vy < 0 && controller.isDown(Action.jump);
         if(vy < 0 && controller.isReleased(Action.jump)) {
@@ -103,6 +102,21 @@ class Box {
             var bounds = getBounds();
             if(!Game.inst.truck.bounds.intersects(bounds)) {
                 inTruck = false;
+            }
+        } else if(magnet != null) {
+            var targetX = magnet.x + 8 - hitbox.width * .5 - (bitmap.scaleX == -1 ? 0 : 1) - hitbox.xMin;
+            if(Util.fabs(magnetSOD.pos - targetX) < 1 && Util.fabs(magnetSOD.vel) < .01) {
+                x = Math.round(targetX);
+            } else {
+                magnetSOD.update(dt, targetX);
+                x = Math.round(magnetSOD.pos);
+            }
+            y = magnet.y - (hitbox.height + hitbox.yMin + 1);
+            rx = ry = 0;
+            vx = 0;
+            vy = 0;
+            if(!magnet.isOn) {
+                magnet = null;
             }
         } else {
             vy = Util.sodStep(vy, FALL_VEL, jumping ? GRAVITY_JUMP : GRAVITY, dt);
@@ -155,13 +169,23 @@ class Box {
         var y1 = this.y + hitbox.yMin + dy;
         var x2 = x1 + hitbox.width;
         var y2 = y1 + hitbox.height;
+        var prevMagnet = this.magnet;
         for(e in Game.inst.entities) {
             if((dx != 0 || dy < 0) && Std.isOfType(e, Rock)) {
                 var rock = cast(e, Rock);
                 var bounds = rock.bounds;
-                if(x2 < bounds.xMin || x1 > bounds.xMax || y2 < bounds.yMin || y1 > bounds.yMax) continue;
-                rock.hit(dx, dy);
+                if(!(x2 < bounds.xMin || x1 > bounds.xMax || y2 <= bounds.yMin || y1 >= bounds.yMax)) {
+                    rock.hit(dx, dy);
+                }
+            } else if(Std.isOfType(e, Magnet)) {
+                var magnet = cast(e, Magnet);
+                if(magnet.isOn && !(x2 < magnet.x || x1 > magnet.x + 16 || y2 < magnet.y || y1 > magnet.y + 16)) {
+                    this.magnet = magnet;
+                }
             }
+        }
+        if(this.magnet != null && this.magnet != prevMagnet) {
+            magnetSOD = new SecondOrderDynamics(2.5, .7, 0., x, Precise);
         }
     }
 

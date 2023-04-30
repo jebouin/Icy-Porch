@@ -97,6 +97,7 @@ class CardboardParticle {
 }
 
 class Fx {
+    var particles : Array<Particle> = [];
     var sbFront : SpriteBatch;
     var sbBack : SpriteBatch;
     public var shakeX : Float = 0.;
@@ -121,6 +122,7 @@ class Fx {
         Game.inst.world.add(sbBack, backLayer);
         cardboardGraphics = new Graphics();
         Game.inst.world.add(cardboardGraphics, frontLayer);
+        sbFront.hasRotationScale = sbBack.hasRotationScale = true;
     }
 
     public function delete() {
@@ -270,7 +272,26 @@ class Fx {
         };
     }
 
-    public function brokenBlock(x:Float, y:Float, dx:Float, dy:Float) {
+    public function brokenBlock(x:Float, y:Float, w:Float, h:Float, dx:Float, dy:Float) {
+        var angle = Math.atan2(dy, dx);
         screenShake(2, 2, 2., 1., 0);
+        var cnt = Math.ceil((w / 16) * (h / 16) * 8);
+        for(i in 0...cnt) {
+            var isBig = Std.random(5) == 0;
+            var id = isBig ? 4 : Std.random(3) + 1;
+            var p = new Particle(Assets.tiles.get("particleRock" + id), Util.randf(1., 2.));
+            var explosiveVel = Util.randf(50, 150);
+            var explosiveAngle = Util.randf(0, Math.PI);
+            var vel = Util.randf(-50, 100);
+            p.rotVel = Util.randSign() * Util.randf(5., 20.);
+            p.x = Util.randf(x + 4, x + w - 4);
+            p.y = Util.randf(y + 4, y + h - 4);
+            p.vx = vel * Math.cos(angle) + explosiveVel * Math.cos(explosiveAngle);
+            p.vy = vel * Math.sin(angle) + explosiveVel * Math.sin(explosiveAngle);
+            p.accy = 200.;
+            p.bounce = true;
+            p.rotation = Math.random() * Util.TAU;
+            sbBack.add(p);
+        }
     }
 }

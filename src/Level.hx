@@ -116,10 +116,13 @@ class Level {
             Game.inst.spawnY = y + t.height - 10 - 9;
         }
         for(r in level.l_Entities.all_Rock) {
-            new Rock(r.pixelX + WORLD_X, r.pixelY + WORLD_Y);
+            new Rock(r.pixelX + WORLD_X, r.pixelY + WORLD_Y, r.width, r.height);
         }
         for(s in level.l_Entities.all_Sheet) {
             new Sheet(s.pixelX + WORLD_X, s.pixelY + WORLD_Y, s.width, s.height);
+        }
+        for(m in level.l_Entities.all_Magnet) {
+            new Magnet(m.pixelX + WORLD_X, m.pixelY + WORLD_Y);
         }
     }
 

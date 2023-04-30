@@ -1,15 +1,14 @@
 TODO
-- finish block
-- magnet
 - truck hud
 - house and win condition
+- test OOB collisions
 
 4:00
 - Starting scene
 - Level design
 - Ending scene
 
-6:00 AUDIO
+8:00 AUDIO
 - chill synthwave?
 
 10:00
@@ -25,5 +24,7 @@ TODO
 
 IF TIME LEFT
 - trees and more decoration
+- faster is in polygon (with integers?)
 
-Rect(0, 96, 32, 16)
+Rect(112, 112, 16, 1)
+

@@ -26,6 +26,7 @@ class Game extends Scene {
     public static var LAYER_LAVA = _layer++;
     public static var LAYER_TRUCK = _layer++;
     public static var LAYER_WALLS = _layer++;
+    public static var LAYER_MAGNETS = _layer++;
     public static var LAYER_FX_FRONT = _layer++;
     public static var LAYER_DEBUG = _layer++;
     public static var inst : Game;
@@ -109,6 +110,9 @@ class Game extends Scene {
             }
             if(dead && !failed && Main.inst.controller.isPressed(Action.jump)) {
                 levelFailed();
+            }
+            if(Main.inst.controller.isPressed(Action.magnet)) {
+                toggleMagnets();
             }
             level.update(dt);
             background.update(dt);
@@ -210,5 +214,14 @@ class Game extends Scene {
             b.delete();
         }
         boxes = [];
+    }
+
+    public function toggleMagnets() {
+        for(e in entities) {
+            if(Std.isOfType(e, Magnet)) {
+                var m = cast(e, Magnet);
+                m.toggle();
+            }
+        }
     }
 }

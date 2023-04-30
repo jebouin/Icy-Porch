@@ -35,7 +35,7 @@ enum abstract ControllerType(Int) {
 
 enum abstract Action(Int) {
     var jump;
-    var freeze;
+    var magnet;
     var retry;
     var debugNextLevel;
     var debugLeft;
