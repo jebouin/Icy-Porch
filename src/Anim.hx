@@ -6,8 +6,8 @@ import h2d.Tile;
 import h2d.RenderContext;
 
 class Anim extends Drawable {
-	public var frames(default,null) : Array<Tile>;
-	public var currentFrame(get,set) : Float;
+	public var frames(default, null) : Array<Tile>;
+	public var currentFrame(get, set) : Float;
 	public var speed : Float;
 	public var pause : Bool = false;
 	public var loops : Bool = true;

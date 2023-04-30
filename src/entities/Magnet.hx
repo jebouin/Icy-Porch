@@ -11,8 +11,9 @@ class Magnet extends Entity {
     public var isOn : Bool = false;
     var timer : Float = 0;
     var particles : Array<Bitmap> = [];
+    public var isFree : Bool = true;
 
-    public function new(x:Int, y:Int) {
+    public function new(x:Int, y:Int, isOn:Bool) {
         super(Assets.animData.get(isOn ? "magnetOn" : "magnetOff"), Game.LAYER_MAGNETS, x, y);
         var partTile = Assets.tiles.get("particleMagnet");
         for(i in 0...4) {
@@ -21,7 +22,9 @@ class Magnet extends Entity {
             p.visible = false;
             particles.push(p);
         }
-        toggle();
+        if(isOn) {
+            toggle();
+        }
     }
 
     override public function delete() {

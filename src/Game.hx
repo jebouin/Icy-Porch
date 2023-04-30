@@ -10,10 +10,13 @@ import fx.*;
 enum GameState {
     In;
     Playing;
+    Won;
     Out;
 }
 
 class Game extends Scene {
+    public static inline var WIN_TIME = 1.5;
+    public static inline var WIN_X = 336 + Level.WORLD_X;
     public static inline var TRANSITION_TIME_IN = .8;
     public static inline var TRANSITION_TIME_OUT = 1.8;
     static var _layer = 0;
@@ -21,13 +24,17 @@ class Game extends Scene {
     public static var LAYER_BACK = _layer++;
     public static var LAYER_FX_BACK = _layer++;
     public static var LAYER_BACK_WALLS = _layer++;
+    public static var LAYER_DECO_BACK = _layer++;
+    public static var LAYER_TRUCK_BACK = _layer++;
     public static var LAYER_FX_MID = _layer++;
     public static var LAYER_BOX = _layer++;
     public static var LAYER_LAVA = _layer++;
     public static var LAYER_TRUCK = _layer++;
     public static var LAYER_WALLS = _layer++;
+    public static var LAYER_DECO_FRONT = _layer++;
     public static var LAYER_MAGNETS = _layer++;
     public static var LAYER_FX_FRONT = _layer++;
+    public static var LAYER_UI = _layer++;
     public static var LAYER_DEBUG = _layer++;
     public static var inst : Game;
     public var level : Level;
@@ -44,6 +51,12 @@ class Game extends Scene {
     var transitionOut : TransitionOut;
     public var state(default, set) : GameState = Playing;
     public var stateTimer(default, null) = 0.;
+    public var started : Bool = false;
+    var progressText : Text;
+    var progressTextTargetX : Int;
+    var progressSOD : SecondOrderDynamics;
+    var progressTimer : Float;
+    var arrivedCount : Int = 0;
 
     public function new() {
         super();
@@ -75,13 +88,24 @@ class Game extends Scene {
         super.update(dt);
         stateTimer += dt;
         if(state == Playing) {
+            boxes.sort(function(b1, b2) {
+                return (b1.magnet == null ? 0 : 1) - (b2.magnet == null ? 0 : 1);
+            });
             var i = 0, failed = false, dead = false;
             while(i < boxes.length) {
                 boxes[i].update(dt);
                 if(boxes[i].dead) {
                     dead = true;
+                } else if(!boxes[i].deleted && boxes[i].x >= WIN_X) {
+                    boxes[i].arrived = true;
+                    boxes[i].delete();
+                    arrivedCount++;
+                    showProgress();
+                    if(arrivedCount == truck.boxTotal) {
+                        levelComplete();
+                    }
                 }
-                if(boxes[i].deleted) {
+                if(boxes[i].deleted && !boxes[i].arrived) {
                     boxes.splice(i, 1);
                     failed = true;
                 } else {
@@ -89,7 +113,7 @@ class Game extends Scene {
                 }
             }
             if(failed) {
-                levelFailed();
+                levelFailed(false);
             }
             i = 0;
             while(i < entities.length) {
@@ -106,30 +130,51 @@ class Game extends Scene {
             }
             #end
             if(Main.inst.controller.isPressed(Action.retry)) {
-                levelFailed();
+                levelFailed(false);
             }
             if(dead && !failed && Main.inst.controller.isPressed(Action.jump)) {
-                levelFailed();
+                levelFailed(true);
             }
             if(Main.inst.controller.isPressed(Action.magnet)) {
                 toggleMagnets();
             }
-            level.update(dt);
-            background.update(dt);
-            fx.update(dt);
+            if(!started && Main.inst.controller.isPressed(Action.jump)) {
+                started = true;
+            }
+            updateNonInteractive(dt);
         } if(state == In) {
             transitionIn.update(dt);
             if(stateTimer >= TRANSITION_TIME_IN) {
                 state = Playing;
             }
-            level.update(dt);
-            background.update(dt);
-            fx.update(dt);
+            updateNonInteractive(dt);
         } else if(state == Out) {
             transitionOut.update(dt);
             if(stateTimer >= TRANSITION_TIME_OUT) {
                 loadNextLevel();
                 state = In;
+            }
+        } else if(state == Won) {
+            updateNonInteractive(dt);
+            if(stateTimer >= WIN_TIME) {
+                state = Out;
+            }
+        }
+    }
+
+    function updateNonInteractive(dt:Float) {
+        level.update(dt);
+        background.update(dt);
+        fx.update(dt);
+        if(progressText != null) {
+            progressSOD.update(dt, progressTextTargetX);
+            progressText.x = progressSOD.pos;
+            progressTimer += dt;
+            if(progressTimer >= 1.5) {
+                progressText.remove();
+                progressText = null;
+            } else if(progressTimer >= 1.) {
+                progressText.alpha = 1. - (progressTimer - 1.) * 2.;
             }
         }
     }
@@ -148,20 +193,24 @@ class Game extends Scene {
             case In:
                 world.filter = null;
                 transitionIn = null;
+            case Playing:
+            case Won:
             case Out:
                 transitionOut.remove();
-            case Playing:
         }
         state = st;
         switch(state) {
             case In:
                 transitionIn = new TransitionIn();
                 world.filter = transitionIn;
+            case Playing:
+                world.filter = null;
+                started = false;
+            case Won:
+
             case Out:
                 world.add(transitionOut, Game.LAYER_FX_FRONT);
                 transitionOut.start();
-            case Playing:
-                world.filter = null;
         }
         stateTimer = 0.;
         return st;
@@ -179,6 +228,7 @@ class Game extends Scene {
         levelText.text = level.title;
         levelText.x = Main.WIDTH * .5 - levelText.textWidth * .5;
         levelText.y = 1;
+        arrivedCount = 0;
         fx.clear();
         return true;
     }
@@ -191,11 +241,12 @@ class Game extends Scene {
     }
 
     public function levelComplete() {
-        state = Out;
+        state = Won;
     }
 
-    public function levelFailed() {
+    public function levelFailed(fast:Bool) {
         loadLevel(levelId);
+        started = fast;
     }
 
     public function onBoxCollision(i:Int, j:Int) {
@@ -223,5 +274,23 @@ class Game extends Scene {
                 m.toggle();
             }
         }
+    }
+
+    public function showProgress() {
+        if(progressText != null) {
+            progressText.remove();
+        }
+        progressText = new Text(Assets.font);
+        world.add(progressText, LAYER_UI);
+        if(arrivedCount == truck.boxTotal) {
+            progressText.text = "Done!";
+        } else {
+            progressText.text = Std.string(arrivedCount) + "/" + Std.string(truck.boxTotal);
+        }
+        progressText.x = level.porchFrontX;
+        progressText.y = level.porchFrontY + 3;
+        progressSOD = new SecondOrderDynamics(2.5, 1., 0., progressText.x, Fast);
+        progressTextTargetX = Std.int(progressText.x - progressText.textWidth - 35);
+        progressTimer = 0.;
     }
 }

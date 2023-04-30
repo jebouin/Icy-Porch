@@ -35,8 +35,9 @@ class Box {
     var flashTimer : Float = FLASH_TIME + 1.;
     var flashFilter : ColorMatrix;
     var inTruck : Bool = true;
-    var magnet : Magnet = null;
+    public var magnet : Magnet = null;
     var magnetSOD : SecondOrderDynamics;
+    public var arrived : Bool = false;
 
     public function new() {
         bitmap = new Bitmap(Assets.tiles.get("box"));
@@ -116,6 +117,7 @@ class Box {
             vx = 0;
             vy = 0;
             if(!magnet.isOn) {
+                magnet.isFree = true;
                 magnet = null;
             }
         } else {
@@ -170,6 +172,7 @@ class Box {
         var x2 = x1 + hitbox.width;
         var y2 = y1 + hitbox.height;
         var prevMagnet = this.magnet;
+        var nextMagnet = null;
         for(e in Game.inst.entities) {
             if((dx != 0 || dy < 0) && Std.isOfType(e, Rock)) {
                 var rock = cast(e, Rock);
@@ -179,13 +182,21 @@ class Box {
                 }
             } else if(Std.isOfType(e, Magnet)) {
                 var magnet = cast(e, Magnet);
-                if(magnet.isOn && !(x2 < magnet.x || x1 > magnet.x + 16 || y2 < magnet.y || y1 > magnet.y + 16)) {
-                    this.magnet = magnet;
+                if(magnet.isOn && magnet.isFree && !(x2 < magnet.x || x1 > magnet.x + 16 || y2 < magnet.y || y1 > magnet.y + 16)) {
+                    nextMagnet = magnet;
                 }
             }
         }
-        if(this.magnet != null && this.magnet != prevMagnet) {
-            magnetSOD = new SecondOrderDynamics(2.5, .7, 0., x, Precise);
+        if(nextMagnet != null) {
+            this.magnet = nextMagnet;
+            this.magnet.isFree = false;
+            if(this.magnet != prevMagnet) {
+                magnetSOD = new SecondOrderDynamics(2.5, .7, 0., x, Precise);
+            }
+            // Use largest box ID so other boxes can collide with this one
+            var boxes = Game.inst.boxes;
+            boxes.remove(this);
+            boxes.push(this);
         }
     }
 

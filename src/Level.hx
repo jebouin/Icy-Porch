@@ -22,21 +22,29 @@ enum CollisionShape {
 }
 
 class LevelRender {
+    var decoFront : TileGroup;
     var walls : TileGroup;
+    var decoBack : TileGroup;
     var back : TileGroup;
     
     public function new(level:LevelProject_Level) {
+        decoFront = level.l_DecoFront.render();
+        Game.inst.world.add(decoFront, Game.LAYER_DECO_FRONT);
         walls = level.l_Walls.render();
         Game.inst.world.add(walls, Game.LAYER_WALLS);
+        decoBack = level.l_DecoBack.render();
+        Game.inst.world.add(decoBack, Game.LAYER_DECO_BACK);
         back = level.l_Back.render();
         Game.inst.world.add(back, Game.LAYER_BACK_WALLS);
-        walls.x = back.x = Level.WORLD_X;
-        walls.y = back.y = Level.WORLD_Y;
+        walls.x = back.x = decoFront.x = decoBack.x = Level.WORLD_X;
+        walls.y = back.y = decoFront.y = decoBack.y = Level.WORLD_Y;
     }
 
     public function delete() {
         walls.remove();
         back.remove();
+        decoBack.remove();
+        decoFront.remove();
     }
 }
 
@@ -52,7 +60,10 @@ class Level {
     public static inline var TILE_ICE_DL = 3;
     public static inline var TILE_ICE_UR = 4;
     public static inline var TILE_ICE_UL = 5;
+    public static inline var TILE_PORCH_STAIRS = 6;
+    public static inline var TILE_PORCH_FLAT = 7;
     public static inline var TILE_TRAP_LAVA = 1;
+    public static inline var TILE_PORCH_DECO_FRONT = 355;
     public static inline var LAVA_OFF_Y = 8;
     public var width : Int;
     public var height : Int;
@@ -66,6 +77,8 @@ class Level {
     public var title(default, null) : String = "";
     public var colliders : Array<IPolygon> = [];
     public var lava : Lava;
+    public var porchFrontX : Float;
+    public var porchFrontY : Float;
 
     public function new() {
         project = new LevelProject();
@@ -105,6 +118,16 @@ class Level {
         #end
         loadLava();
         title = level.f_Title;
+        for(i in 0...height) {
+            for(j in 0...width) {
+                if(!level.l_DecoFront.hasAnyTileAt(j, i)) continue;
+                var tile = level.l_DecoFront.getTileStackAt(j, i)[0].tileId;
+                if(tile == TILE_PORCH_DECO_FRONT) {
+                    porchFrontX = j * TS + WORLD_X;
+                    porchFrontY = i * TS + WORLD_Y;
+                }
+            }
+        }
     }
 
     public function loadEntities() {
@@ -122,7 +145,7 @@ class Level {
             new Sheet(s.pixelX + WORLD_X, s.pixelY + WORLD_Y, s.width, s.height);
         }
         for(m in level.l_Entities.all_Magnet) {
-            new Magnet(m.pixelX + WORLD_X, m.pixelY + WORLD_Y);
+            new Magnet(m.pixelX + WORLD_X, m.pixelY + WORLD_Y, m.f_isOn);
         }
     }
 
@@ -307,8 +330,9 @@ class Level {
     public function rectCollision(x:Int, y:Int, w:Int, h:Int) {
         return pointCollision(new Point(x, y)) || pointCollision(new Point(x + w, y)) || pointCollision(new Point(x, y + h)) || pointCollision(new Point(x + w, y + h));
     }
-    function boxCollision(x:Int, y:Int, boxId:Int) {
+    function boxCollision(x:Float, y:Float, boxId:Int) {
         var all = Game.inst.boxes;
+        if(boxId == all.length - 1) return null;
         for(i in boxId + 1...all.length) {
             var other = all[i];
             if(other.deleted || other.dead) continue;
@@ -325,9 +349,9 @@ class Level {
         var res = {moveX: 0, moveY: 0, collidedBox: null};
         if(dx > 0) {
             for(i in 0...dx) {
-                var box = boxCollision(x + w + 1, y, boxId);
+                var box = boxCollision(x + w + 1 - Collision.EPS, y + Collision.EPS, boxId);
                 if(box == null) {
-                    box = boxCollision(x + w + 1, y + h, boxId);
+                    box = boxCollision(x + w + 1 - Collision.EPS, y + h - Collision.EPS, boxId);
                 }
                 if(box != null) {
                     res.collidedBox = box;
@@ -360,9 +384,9 @@ class Level {
             }
         } else if(dx < 0) {
             for(i in 0...-dx) {
-                var box = boxCollision(x - 1, y, boxId);
+                var box = boxCollision(x - 1 + Collision.EPS, y + Collision.EPS, boxId);
                 if(box == null) {
-                    box = boxCollision(x - 1, y + h, boxId);
+                    box = boxCollision(x - 1 + Collision.EPS, y + h - Collision.EPS, boxId);
                 }
                 if(box != null) {
                     res.collidedBox = box;
@@ -482,5 +506,7 @@ class Level {
         tileCollisions[3] = DiagDL;
         tileCollisions[4] = DiagUR;
         tileCollisions[5] = DiagUL;
+        tileCollisions[6] = DiagDR;
+        tileCollisions[7] = Full;
     }
 }
