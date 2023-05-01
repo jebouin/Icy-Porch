@@ -60,7 +60,7 @@ class Game extends Scene {
     public var dead : Bool;
     var showEnding : Bool = false;
 
-    public function new(?fromTitle:Bool=false) {
+    public function new(?fromTitle:Bool=true) {
         super();
         if(inst != null) {
             throw "Game scene already exists";
@@ -76,10 +76,7 @@ class Game extends Scene {
         if(fromTitle) {
             state = In;
         } else {
-            /*while(loadLevel(levelId + 1)) {
-                levelId++;
-            }*/
-            levelId = 0;
+            levelId = 2;
             loadLevel(levelId);
         }
     }
@@ -127,6 +124,7 @@ class Game extends Scene {
             }
             if(boxDead) {
                 dead = true;
+                Audio.stopAllSlide();
             }
             if(failed) {
                 levelFailed(false);

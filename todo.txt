@@ -1,11 +1,3 @@
-- level design
-- ending scene
-- decoration
-- truck spa
-
-14:30 BEFORE SUBMIT
-- add more keys and controller
-
 PUBLISH
 Start scene: 320*256 (cropped in game)
 LD: 640x512 (2x scaled)

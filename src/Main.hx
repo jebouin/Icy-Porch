@@ -66,9 +66,13 @@ class Main extends hxd.App {
     }
     function startGame() {
         started = true;
+        #if debug
         new Game();
         //new Title();
         //new Ending();
+        #else
+        new Title();
+        #end
     }
     function initController() {
         #if debug
@@ -79,9 +83,9 @@ class Main extends hxd.App {
         controller.bindKey(Action.debugLeft, Key.R);
         controller.bindKey(Action.debugRight, Key.T);
         #else
-        controller.bindKey(Action.jump, Key.X);
-        controller.bindKey(Action.magnet, Key.C);
-        controller.bindKey(Action.retry, Key.R);
+        controller.bindKey(Action.jump, [Key.X, Key.J]);
+        controller.bindKey(Action.magnet, [Key.C, Key.K]);
+        controller.bindKey(Action.retry, [Key.R, Key.ESCAPE]);
         #end
         controller.bindPad(Action.jump, PadButton.X);
         controller.bindPad(Action.magnet, PadButton.A);

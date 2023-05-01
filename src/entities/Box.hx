@@ -239,7 +239,9 @@ class Box {
         groundTimer = JUMP_COYOTE_TIME + 1.;
         jumpBufferTimer = JUMP_BUFFER_TIME + 1.;
         vy = -JUMP_VEL;
-        Audio.playJump();
+        if(!inTruck) {
+            Audio.playJump();
+        }
         return true;
     }
 

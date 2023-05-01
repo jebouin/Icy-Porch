@@ -128,6 +128,14 @@ class Audio {
         slideBoxes.splice(i, 1);
         slideSpatials.splice(i, 1);
     }
+    public static function stopAllSlide() {
+        for(i in 0...slideBoxes.length) {
+            slideSounds[i].stop();
+        }
+        slideSounds = [];
+        slideBoxes = [];
+        slideSpatials = [];
+    }
     public static function update(dt:Float) {
         for(i in 0...slideBoxes.length) {
             var box = slideBoxes[i];
