@@ -17,7 +17,7 @@ class Box {
     public static inline var JUMP_BUFFER_TIME = .15;
     public static inline var FLASH_TIME = .05;
     var bitmap : Bitmap;
-    public var hitbox : IBounds = IBounds.fromValues(1, 1, 13, 9);
+    public var hitbox : IBounds = IBounds.fromValues(2, 1, 11, 9);
     public var x : Int = 0;
     public var y : Int = 0;
     public var rx : Float = 0.;
@@ -34,19 +34,20 @@ class Box {
     var id : Int;
     var flashTimer : Float = FLASH_TIME + 1.;
     var flashFilter : ColorMatrix;
-    var inTruck : Bool = true;
+    public var inTruck : Bool = true;
     public var magnet : Magnet = null;
     var magnetSOD : SecondOrderDynamics;
     public var arrived : Bool = false;
     var prevOnGround : Bool = false;
 
-    public function new() {
+    public function new(moveSign:Int) {
         bitmap = new Bitmap(Assets.tiles.get("box"));
         Game.inst.world.add(bitmap, Game.LAYER_BOX);
         x = Game.inst.spawnX;
         y = Game.inst.spawnY;
         bitmap.x = x;
         bitmap.y = y;
+        this.moveSign = moveSign;
         var m = new h3d.Matrix();
         m.colorSet(0xFFFFFF);
         flashFilter = new ColorMatrix(m);
@@ -59,12 +60,15 @@ class Box {
         onLeaveGround();
     }
 
-    public function update(dt:Float) {
+    public function update(dt:Float, anyBoxDead:Bool) {
         if(dead) {
             dieTimer += dt;
             if(dieTimer > DIE_TIME) {
                 delete();
             }
+            return;
+        }
+        if(anyBoxDead) {
             return;
         }
         var level = Game.inst.level;
@@ -100,7 +104,7 @@ class Box {
         var diagSign = 0;
         if(inTruck) {
             vy = 0.;
-            vx = MOVE_VEL;
+            vx = moveSign * MOVE_VEL;
             tryMoveNoCol(vx * dt, vy * dt);
             var bounds = getBounds();
             if(!Game.inst.truck.bounds.intersects(bounds)) {
@@ -181,12 +185,13 @@ class Box {
         var y2 = y1 + hitbox.height;
         var prevMagnet = this.magnet;
         var nextMagnet = null;
+        var hitRock = null;
         for(e in Game.inst.entities) {
             if((dx != 0 || dy < 0) && Std.isOfType(e, Rock)) {
                 var rock = cast(e, Rock);
                 var bounds = rock.bounds;
                 if(!(x2 < bounds.xMin || x1 > bounds.xMax || y2 <= bounds.yMin || y1 >= bounds.yMax)) {
-                    rock.hit(dx, dy);
+                    hitRock = rock;
                 }
             } else if(Std.isOfType(e, Magnet)) {
                 var magnet = cast(e, Magnet);
@@ -206,6 +211,7 @@ class Box {
             boxes.remove(this);
             boxes.push(this);
         }
+        return hitRock;
     }
 
     function checkDeath(level:Level) {
@@ -252,7 +258,7 @@ class Box {
         rx += dx;
         var amount = Math.round(rx);
         if(amount != 0) {
-            checkEntityCollision(amount, 0);
+            var rock = checkEntityCollision(amount, 0);
             rx -= amount;
             var res = Game.inst.level.sweptRectCollisionHorizontal(x + hitbox.xMin, y + hitbox.yMin, hitbox.width, hitbox.height, amount, id);
             if(res.collidedBox != null) {
@@ -264,6 +270,12 @@ class Box {
             if(res.moveX != amount && onCollide != null) {
                 onCollide(amount - res.moveX);
             }
+            if(rock != null) {
+                rock.hit(amount, 0);
+                if(res.moveX == amount && onCollide != null) {
+                    onCollide(amount - res.moveX);
+                }
+            }
         }
     }
 
@@ -271,13 +283,16 @@ class Box {
         ry += dy;
         var amount = Math.round(ry);
         if(amount != 0) {
-            checkEntityCollision(0, amount);
+            var rock = checkEntityCollision(0, amount);
             ry -= amount;
             var res = Game.inst.level.sweptRectCollisionVertical(x + hitbox.xMin, y + hitbox.yMin, hitbox.width, hitbox.height, amount);
             x += res.moveX;
             y += res.moveY;
             if(res.moveY != amount && onCollide != null) {
                 onCollide(amount - res.moveY);
+            }
+            if(rock != null) {
+                rock.hit(0, amount);
             }
         }
     }

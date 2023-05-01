@@ -12,13 +12,15 @@ class Truck extends Entity {
     public var spawnTimer : Float = 2.;
     var bar : Graphics;
     var tuto : Anim;
+    public var isLeft : Bool;
 
-    public function new(x:Int, y:Int, boxCount:Int, spawnTimeTiles:Float) {
+    public function new(x:Int, y:Int, boxCount:Int, spawnTimeTiles:Float, isLeft:Bool) {
         this.boxTotal = boxCount;
         this.spawnTime = this.spawnTimer = (spawnTimeTiles * Level.TS - 13) / Box.MOVE_VEL;
-        super(Assets.animData.get("truck"), Game.LAYER_TRUCK, x, y);
+        this.isLeft = isLeft;
+        super(Assets.animData.get(isLeft ? "truckLeft" : "truck"), Game.LAYER_TRUCK, x, y);
         animBack = new Anim();
-        animBack.playFromName("truckBack");
+        animBack.playFromName(isLeft ? "truckBackLeft" : "truckBack");
         animBack.x = anim.x;
         animBack.y = anim.y;
         setColliderRect(64 - 4, 32);
@@ -52,7 +54,8 @@ class Truck extends Entity {
                 if(spawnTimer > spawnTime) {
                     spawnTimer = 0.;
                     boxCount++;
-                    Game.inst.boxes.push(new Box());
+                    Game.inst.boxes.push(new Box(isLeft ? -1 : 1));
+                    Audio.playKick();
                 }
             } else {
                 spawnTimer = 0.;

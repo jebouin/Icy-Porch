@@ -46,7 +46,7 @@ class Game extends Scene {
     public var spawnX : Int;
     public var spawnY : Int;
     var levelText : Text;
-    var levelId : Int = 3;
+    var levelId : Int = 0;
     var transitionIn : TransitionIn;
     var transitionOut : TransitionOut;
     public var state(default, set) : GameState = Playing;
@@ -57,6 +57,8 @@ class Game extends Scene {
     var progressSOD : SecondOrderDynamics;
     var progressTimer : Float;
     var arrivedCount : Int = 0;
+    public var dead : Bool;
+    var showEnding : Bool = false;
 
     public function new(?fromTitle:Bool=false) {
         super();
@@ -71,15 +73,19 @@ class Game extends Scene {
         background = new Background();
         transitionOut = new TransitionOut();
         Audio.playMusic("intro", "loop");
-        fromTitle = true;
         if(fromTitle) {
             state = In;
+        } else {
+            /*while(loadLevel(levelId + 1)) {
+                levelId++;
+            }*/
+            levelId = 0;
+            loadLevel(levelId);
         }
     }
 
     override public function delete() {
         super.delete();
-        inst = null;
         for(b in boxes) {
             b.delete();
         }
@@ -87,6 +93,7 @@ class Game extends Scene {
             e.delete();
         }
         fx.delete();
+        inst = null;
     }
 
     override public function update(dt:Float) {
@@ -96,12 +103,12 @@ class Game extends Scene {
             boxes.sort(function(b1, b2) {
                 return (b1.magnet == null ? 0 : 1) - (b2.magnet == null ? 0 : 1);
             });
-            var i = 0, failed = false, dead = false;
+            var i = 0, failed = false, boxDead = false;
             while(i < boxes.length) {
-                boxes[i].update(dt);
+                boxes[i].update(dt, dead);
                 if(boxes[i].dead) {
-                    dead = true;
-                } else if(!boxes[i].deleted && boxes[i].x >= WIN_X) {
+                    boxDead = true;
+                } else if(!boxes[i].deleted && boxes[i].x >= WIN_X && !boxes[i].inTruck) {
                     boxes[i].arrived = true;
                     boxes[i].delete();
                     arrivedCount++;
@@ -118,35 +125,41 @@ class Game extends Scene {
                     i++;
                 }
             }
+            if(boxDead) {
+                dead = true;
+            }
             if(failed) {
                 levelFailed(false);
             }
-            i = 0;
-            while(i < entities.length) {
-                entities[i].update(dt);
-                if(entities[i].deleted) {
-                    entities.splice(i, 1);
-                } else {
-                    i++;
+            if(!dead) {
+                i = 0;
+                while(i < entities.length) {
+                    entities[i].update(dt);
+                    if(entities[i].deleted) {
+                        entities.splice(i, 1);
+                    } else {
+                        i++;
+                    }
+                }
+                if(Main.inst.controller.isPressed(Action.retry)) {
+                    levelFailed(false);
+                }
+                if(Main.inst.controller.isPressed(Action.magnet)) {
+                    toggleMagnets();
+                }
+                if(!started && Main.inst.controller.isPressed(Action.jump)) {
+                    started = true;
+                }
+            } else {
+                if(!failed && Main.inst.controller.isPressed(Action.jump)) {
+                    levelFailed(true);
                 }
             }
             #if debug
             if(Main.inst.controller.isPressed(Action.debugNextLevel)) {
-                levelComplete();
+                levelComplete(true);
             }
             #end
-            if(Main.inst.controller.isPressed(Action.retry)) {
-                levelFailed(false);
-            }
-            if(dead && !failed && Main.inst.controller.isPressed(Action.jump)) {
-                levelFailed(true);
-            }
-            if(Main.inst.controller.isPressed(Action.magnet)) {
-                toggleMagnets();
-            }
-            if(!started && Main.inst.controller.isPressed(Action.jump)) {
-                started = true;
-            }
             updateNonInteractive(dt);
         } if(state == In) {
             transitionIn.update(dt);
@@ -165,6 +178,10 @@ class Game extends Scene {
             if(stateTimer >= WIN_TIME) {
                 state = Out;
             }
+        }
+        if(showEnding) {
+            delete();
+            new Ending();
         }
     }
 
@@ -236,19 +253,23 @@ class Game extends Scene {
         levelText.x = Main.WIDTH * .5 - levelText.textWidth * .5;
         levelText.y = 1;
         arrivedCount = 0;
+        dead = false;
         fx.clear();
         return true;
     }
 
     public function loadNextLevel() {
         if(!loadLevel(++levelId)) {
-            levelId = 0;
-            loadLevel(levelId);
+            showEnding = true;
         }
     }
 
-    public function levelComplete() {
-        state = Won;
+    public function levelComplete(?fast:Bool=false) {
+        if(fast) {
+            loadNextLevel();
+        } else {
+            state = Won;
+        }
     }
 
     public function levelFailed(fast:Bool) {
@@ -295,7 +316,10 @@ class Game extends Scene {
         progressText = new Text(Assets.font);
         world.add(progressText, LAYER_UI);
         if(arrivedCount == truck.boxTotal) {
-            progressText.text = "Done!";
+            progressText.text = "Thanks!";
+            if(levelId >= 2 && Std.random(6) == 0) {
+                progressText.text = "^_^";
+            }
         } else {
             progressText.text = Std.string(arrivedCount) + "/" + Std.string(truck.boxTotal);
         }

@@ -132,11 +132,17 @@ class Level {
 
     public function loadEntities() {
         for(t in level.l_Entities.all_Truck) {
-            var x = t.pixelX + WORLD_X;
+            var isLeft = t.f_IsLeft;
+            var off = isLeft ? 4 : -4;
+            var x = t.pixelX + WORLD_X + off;
             var y = t.pixelY + WORLD_Y;
-            new Truck(x, y, t.f_BoxCount, t.f_SpawnTimeTiles);
-            Game.inst.spawnX = x + t.width - 32;
+            new Truck(x, y, t.f_BoxCount, t.f_SpawnTimeTiles, isLeft);
             Game.inst.spawnY = y + t.height - 10 - 9;
+            if(isLeft) {
+                Game.inst.spawnX = x + (t.width >> 1) - off;
+            } else {
+                Game.inst.spawnX = x + (t.width >> 1) - 15 - off;
+            }
         }
         for(r in level.l_Entities.all_Rock) {
             new Rock(r.pixelX + WORLD_X, r.pixelY + WORLD_Y, r.width, r.height);

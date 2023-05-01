@@ -130,6 +130,32 @@
 					"centerY": 0
 				},
 				{
+					"name": "truckLeft",
+					"x": 256,
+					"y": 16,
+					"width": 128,
+					"height": 33,
+					"frameWidth": 64,
+					"frameHeight": 33,
+					"frameCount": 2,
+					"fps": 2,
+					"centerX": 0,
+					"centerY": 0
+				},
+				{
+					"name": "truckBackLeft",
+					"x": 384,
+					"y": 16,
+					"width": 128,
+					"height": 33,
+					"frameWidth": 64,
+					"frameHeight": 33,
+					"frameCount": 2,
+					"fps": 2,
+					"centerX": 0,
+					"centerY": 0
+				},
+				{
 					"name": "rock",
 					"x": 0,
 					"y": 128,
@@ -283,6 +309,14 @@
 				},
 				{
 					"name": "blockBreak",
+					"volume": 1
+				},
+				{
+					"name": "kickG",
+					"volume": 1
+				},
+				{
+					"name": "kickF",
 					"volume": 1
 				}
 			],

@@ -3,6 +3,8 @@ package entities;
 import h2d.Tile;
 import h2d.TileGroup;
 import h2d.ScaleGrid;
+import h2d.col.IPolygon;
+import h2d.col.IPoint;
 
 class Sheet extends Entity {
     var isOn : Bool = false;
@@ -25,9 +27,7 @@ class Sheet extends Entity {
     }
 
     override public function delete() {
-        if(isOn) {
-            group.remove();
-        }
+        group.remove();
         super.delete();
     }
 
@@ -37,7 +37,7 @@ class Sheet extends Entity {
             var boxCount = 0;
             for(b in Game.inst.boxes) {
                 var bounds = b.getBounds();
-                if(bounds.x > x + w || bounds.y > y + h || bounds.x + bounds.width < x || bounds.y + bounds.height < y) continue;
+                if(bounds.x >= x + w || bounds.y >= y + h || bounds.x + bounds.width <= x || bounds.y + bounds.height <= y) continue;
                 boxCount++;
             }
             if(boxCount == 0 && prevBoxCount > 0) {

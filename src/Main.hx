@@ -68,6 +68,7 @@ class Main extends hxd.App {
         started = true;
         new Game();
         //new Title();
+        //new Ending();
     }
     function initController() {
         #if debug

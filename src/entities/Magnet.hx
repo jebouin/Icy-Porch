@@ -19,16 +19,20 @@ class Magnet extends Entity {
         for(i in 0...4) {
             var p = new Bitmap(partTile);
             Game.inst.world.add(p, Game.LAYER_BACK_WALLS);
-            p.visible = false;
+            p.visible = isOn;
             particles.push(p);
         }
         if(isOn) {
             toggle();
         }
+        updateParticles();
     }
 
     override public function delete() {
         super.delete();
+        for(p in particles) {
+            p.remove();
+        }
     }
 
     override public function update(dt:Float) {
@@ -36,6 +40,10 @@ class Magnet extends Entity {
         if(isOn) {
             timer += dt;
         }
+        updateParticles();
+    }
+
+    function updateParticles() {
         var fromY = y + 1 - PART_HEIGHT;
         var toY = fromY + PART_HEIGHT;
         for(i in 0...particles.length) {

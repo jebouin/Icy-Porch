@@ -85,7 +85,11 @@ class Audio {
     }
     public static function playDeliver() {
         var pos = music.position / music.duration;
-        playSoundSpa(pos < .5 || currentMusicName != "loop" ? "deliverG" : "deliverF", Game.WIN_X, 0);
+        playSoundSpa(pos < .5 || currentMusicName != "loop" ? "deliverG" : "deliverF", Game.WIN_X * .5 + Main.WIDTH2 * .5, 0);
+    }
+    public static function playKick() {
+        var pos = music.position / music.duration;
+        playSoundSpa(pos < .5 || currentMusicName != "loop" ? "kickG" : "kickF", Game.inst.spawnX * .35 + Main.WIDTH2 * .65, 0);
     }
     public static function playSoundSpa(name:String, x:Float, y:Float) {
         var chan = playSound(name, false);
