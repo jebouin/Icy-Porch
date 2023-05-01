@@ -22,6 +22,7 @@ class Audio {
         manager = Manager.get();
         soundGroup = new ChannelGroup("sound");
         musicGroup = new ChannelGroup("music");
+        musicGroup.volume = .85;
     }
     public static function setMasterVolume(v:Float) {
         manager.masterVolume = v;

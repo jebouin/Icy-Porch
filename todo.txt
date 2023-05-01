@@ -3,6 +3,8 @@ Start scene: 320*256 (cropped in game)
 LD: 640x512 (2x scaled)
 ITCH: 630x500 (2x scaled + cropped)
 
+add ludum dare tag to itch
+
 IF TIME LEFT
 - level name anim
 - trees and more decoration
@@ -10,6 +12,3 @@ IF TIME LEFT
 - faster is in polygon (with integers?)
 - out transition is slow again
 - stop rendering during out transition
-
-max lava gap = 4
-max jump height = 2
